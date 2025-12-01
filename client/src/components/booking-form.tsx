@@ -196,7 +196,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Room *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-room">
                           <SelectValue placeholder="Select room" />
@@ -221,7 +221,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Customer *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-customer">
                           <SelectValue placeholder="Select customer" />
@@ -250,7 +250,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                     <FormLabel>Project *</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
-                      defaultValue={field.value}
+                      value={field.value}
                       disabled={!selectedCustomerId}
                     >
                       <FormControl>
@@ -279,7 +279,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                     <FormLabel>Contact Person</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
-                      defaultValue={field.value}
+                      value={field.value}
                       disabled={!selectedCustomerId}
                     >
                       <FormControl>
@@ -307,7 +307,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Editor</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-editor">
                         <SelectValue placeholder="Select editor" />
@@ -396,7 +396,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate }: Bookin
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-status">
                           <SelectValue placeholder="Select status" />
