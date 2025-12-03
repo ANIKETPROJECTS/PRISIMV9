@@ -36,7 +36,7 @@ export default function ChalanRevisePage() {
   });
 
   const { data: revisions = [] } = useQuery<ChalanRevision[]>({
-    queryKey: ["/api/chalans", selectedChalan?.id, "revisions"],
+    queryKey: [`/api/chalans/${selectedChalan?.id}/revisions`],
     enabled: !!selectedChalan,
   });
 
@@ -45,7 +45,9 @@ export default function ChalanRevisePage() {
       return apiRequest("POST", `/api/chalans/${chalanId}/revise`, { changes });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chalans"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
+      });
       toast({ title: "Revision recorded successfully" });
       setReviseDialogOpen(false);
       setRevisionNotes("");
@@ -64,7 +66,9 @@ export default function ChalanRevisePage() {
       return apiRequest("POST", `/api/chalans/${chalanId}/cancel`, { reason });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chalans"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
+      });
       toast({ title: "Chalan cancelled successfully" });
       setSelectedChalan(null);
     },

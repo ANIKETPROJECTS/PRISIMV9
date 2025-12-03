@@ -39,8 +39,14 @@ export default function EditorReportPage() {
   const [toDate, setToDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [selectedEditor, setSelectedEditor] = useState<string>("all");
 
+  const editorQueryParams = new URLSearchParams({
+    from: fromDate,
+    to: toDate,
+    ...(selectedEditor !== "all" && { editorId: selectedEditor }),
+  }).toString();
+
   const { data: editorReports = [], isLoading } = useQuery<EditorReport[]>({
-    queryKey: ["/api/reports/editors", { from: fromDate, to: toDate, editorId: selectedEditor }],
+    queryKey: [`/api/reports/editors?${editorQueryParams}`],
   });
 
   const { data: editors = [] } = useQuery<Editor[]>({

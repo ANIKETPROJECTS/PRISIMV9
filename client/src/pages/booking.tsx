@@ -74,14 +74,11 @@ export default function BookingPage() {
   const calendarStart = startOfWeek(monthStart);
   const calendarEnd = endOfWeek(monthEnd);
 
+  const fromDate = format(monthStart, "yyyy-MM-dd");
+  const toDate = format(monthEnd, "yyyy-MM-dd");
+
   const { data: bookings = [], isLoading } = useQuery<BookingWithRelations[]>({
-    queryKey: [
-      "/api/bookings",
-      { 
-        from: format(monthStart, "yyyy-MM-dd"), 
-        to: format(monthEnd, "yyyy-MM-dd") 
-      },
-    ],
+    queryKey: [`/api/bookings?from=${fromDate}&to=${toDate}`],
   });
 
   const { data: rooms = [] } = useQuery<Room[]>({
@@ -89,7 +86,7 @@ export default function BookingPage() {
   });
 
   const { data: bookingLogs = [] } = useQuery({
-    queryKey: ["/api/bookings", viewingBooking?.id, "logs"],
+    queryKey: [`/api/bookings/${viewingBooking?.id}/logs`],
     enabled: !!viewingBooking && logsDialogOpen,
   });
 
@@ -98,7 +95,9 @@ export default function BookingPage() {
       return apiRequest("POST", `/api/bookings/${id}/cancel`, { reason });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/bookings')
+      });
       toast({ title: "Booking cancelled successfully" });
       setCancelDialogOpen(false);
       setCancellingBooking(null);

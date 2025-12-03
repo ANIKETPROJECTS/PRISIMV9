@@ -92,7 +92,7 @@ export default function ChalanPage() {
   const selectedCustomerId = form.watch("customerId");
 
   const { data: projects = [] } = useQuery<Project[]>({
-    queryKey: ["/api/projects", { customerId: selectedCustomerId }],
+    queryKey: [`/api/projects?customerId=${selectedCustomerId}`],
     enabled: !!selectedCustomerId,
   });
 
@@ -116,7 +116,9 @@ export default function ChalanPage() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chalans"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
+      });
       toast({ title: "Chalan created successfully" });
       handleCloseDialog();
     },
@@ -134,7 +136,9 @@ export default function ChalanPage() {
       return apiRequest("DELETE", `/api/chalans/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chalans"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
+      });
       toast({ title: "Chalan deleted successfully" });
       setDeleteDialogOpen(false);
     },
@@ -301,7 +305,7 @@ export default function ChalanPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Customer *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger data-testid="select-customer">
                             <SelectValue placeholder="Select customer" />
@@ -328,7 +332,7 @@ export default function ChalanPage() {
                       <FormLabel>Project *</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         disabled={!selectedCustomerId}
                       >
                         <FormControl>

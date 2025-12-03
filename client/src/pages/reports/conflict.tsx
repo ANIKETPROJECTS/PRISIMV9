@@ -25,8 +25,15 @@ export default function ConflictReportPage() {
   const [selectedRoom, setSelectedRoom] = useState<string>("all");
   const [selectedEditor, setSelectedEditor] = useState<string>("all");
 
+  const conflictQueryParams = new URLSearchParams({
+    from: fromDate,
+    to: toDate,
+    ...(selectedRoom !== "all" && { roomId: selectedRoom }),
+    ...(selectedEditor !== "all" && { editorId: selectedEditor }),
+  }).toString();
+
   const { data: conflicts = [], isLoading } = useQuery<{ booking1: BookingWithRelations; booking2: BookingWithRelations }[]>({
-    queryKey: ["/api/reports/conflicts", { from: fromDate, to: toDate, roomId: selectedRoom, editorId: selectedEditor }],
+    queryKey: [`/api/reports/conflicts?${conflictQueryParams}`],
   });
 
   const { data: rooms = [] } = useQuery<Room[]>({

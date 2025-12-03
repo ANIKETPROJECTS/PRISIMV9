@@ -37,15 +37,14 @@ export default function ChalanReportPage() {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewingChalan, setViewingChalan] = useState<ChalanWithItems | null>(null);
 
+  const chalanQueryParams = new URLSearchParams({
+    from: fromDate,
+    to: toDate,
+    ...(selectedCustomer !== "all" && { customerId: selectedCustomer }),
+  }).toString();
+
   const { data: chalans = [], isLoading } = useQuery<ChalanWithItems[]>({
-    queryKey: [
-      "/api/chalans",
-      {
-        from: fromDate,
-        to: toDate,
-        customerId: selectedCustomer !== "all" ? selectedCustomer : undefined,
-      },
-    ],
+    queryKey: [`/api/chalans?${chalanQueryParams}`],
   });
 
   const { data: customers = [] } = useQuery<Customer[]>({

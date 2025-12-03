@@ -37,17 +37,16 @@ export default function BookingReportPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [hideCancelled, setHideCancelled] = useState(false);
 
+  const bookingQueryParams = new URLSearchParams({
+    from: fromDate,
+    to: toDate,
+    ...(selectedCustomer !== "all" && { customerId: selectedCustomer }),
+    ...(selectedRoom !== "all" && { roomId: selectedRoom }),
+    ...(selectedStatus !== "all" && { status: selectedStatus }),
+  }).toString();
+
   const { data: bookings = [], isLoading } = useQuery<BookingWithRelations[]>({
-    queryKey: [
-      "/api/bookings",
-      {
-        from: fromDate,
-        to: toDate,
-        customerId: selectedCustomer !== "all" ? selectedCustomer : undefined,
-        roomId: selectedRoom !== "all" ? selectedRoom : undefined,
-        status: selectedStatus !== "all" ? selectedStatus : undefined,
-      },
-    ],
+    queryKey: [`/api/bookings?${bookingQueryParams}`],
   });
 
   const { data: customers = [] } = useQuery<Customer[]>({

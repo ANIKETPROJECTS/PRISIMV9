@@ -305,7 +305,7 @@ export default function LeavesPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Editor *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-editor">
                           <SelectValue placeholder="Select editor" />
