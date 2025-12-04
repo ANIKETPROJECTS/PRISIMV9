@@ -1,0 +1,254 @@
+✅ PROFESSIONAL REPLIT PROMPT – FIX COMPANY LOGIN & ACCESS (NO UI CHANGE)
+
+Project Name: PRISM – Post-Production Management System
+Instruction Priority:
+
+❌ DO NOT change existing UI design, layout, or structure
+
+✅ Only fix company login logic, API flow & role-based access
+
+✅ Keep existing authentication system
+
+✅ Use existing database
+
+✅ Fix the company dropdown not loading
+
+✅ Add company-based access control
+
+✅ 1. FIX LOGIN COMPANY DROPDOWN ISSUE
+❌ Current Problem:
+
+Login shows “Select a company”
+
+No companies are loading
+
+Login fails with:
+
+401 {"message":"Invalid credentials"}
+
+
+Even correct username & PIN fail if company is not selected
+
+✅ Required Fix:
+
+Load company list dynamically from database
+
+Ensure company dropdown is:
+
+✅ Required
+
+✅ Validated before login submit
+
+If company is not selected:
+
+Show UI error:
+
+Please select a company to continue
+
+
+Prevent API call if company is empty
+
+✅ 2. ADD EXACTLY TWO COMPANIES AT LOGIN
+
+On login screen, always show:
+
+PRISM
+
+Airavata Studio
+
+These must:
+
+Come from database OR
+
+Be auto-seeded if missing
+
+❌ Do not hard-code in frontend only
+✅ Must exist in backend DB
+✅ Must be usable for role & data separation
+
+✅ 3. COMPANY-BASED LOGIN LOGIC (STRICT)
+
+When user logs in, authentication must validate:
+
+Username + Security PIN + Selected Company
+
+
+✅ If correct user but wrong company → Reject
+✅ If correct credentials & correct company → Allow
+✅ Store selected company in:
+
+Session
+
+JWT Token
+
+Local Storage (if used)
+
+This selected company must be used in:
+
+Booking
+
+Chalan
+
+Reports
+
+Masters
+
+Dashboard
+
+✅ 4. COMPANY-BASED DATA ISOLATION (CRITICAL)
+
+After login:
+
+✅ PRISM users:
+
+Must see only PRISM data
+
+Only PRISM:
+
+Bookings
+
+Projects
+
+Rooms
+
+Editors
+
+Reports
+
+Chalans
+
+✅ Airavata Studio users:
+
+Must see only Airavata Studio data
+
+Zero visibility of PRISM data
+
+✅ No shared data between companies
+✅ Enforce isolation at:
+
+API level
+
+SQL queries
+
+Middleware
+
+✅ 5. COMPANY-BASED ROLE ACCESS ALSO APPLY
+
+Each company must have its own roles:
+
+Admin
+
+GST Billing
+
+Non-GST Billing
+
+Booking User
+
+Report View User
+
+Example Rules:
+
+PRISM Admin ≠ Airavata Admin
+
+Airavata Billing User must not access PRISM billing
+
+Dashboard widgets must refresh based on:
+
+Logged In Company + User Role
+
+✅ 6. FIX 401 INVALID CREDENTIAL ERROR (ROOT CAUSE FIX)
+
+Current error appears because:
+
+Company is not being passed to backend
+
+OR backend expects company_id but frontend sends null
+
+✅ Fix required:
+
+Ensure login API receives:
+
+username
+pin
+company_id
+
+
+Backend must validate all 3
+
+Return meaningful errors:
+
+Invalid user
+
+Invalid PIN
+
+Company mismatch
+
+Company not selected
+
+✅ 7. ADD DB SAFETY (NO STRUCTURE CHANGE)
+
+Without changing existing structure:
+
+✅ If company column exists → use it
+✅ If missing:
+
+Add only minimal field:
+
+company_id
+
+
+Auto-assign existing users to PRISM by default
+
+✅ All tables must filter by company_id
+
+booking
+
+project
+
+customer
+
+room
+
+editor
+
+chalan
+
+reports
+
+✅ 8. UI RULES (STRICT)
+
+✅ Do:
+
+Minor UI validation messages only
+
+Red error under company dropdown if empty
+
+❌ Do NOT:
+
+Change fonts
+
+Change layout
+
+Change login page structure
+
+Change colors drastically
+
+✅ 9. FINAL EXPECTED RESULT
+
+After fix, login flow must work as:
+
+Enter Username
+
+Enter PIN
+
+Select Company (PRISM / Airavata Studio)
+
+Click Sign In
+
+Redirect to correct company dashboard
+
+All data filtered by selected company
+
+Role-based menu applied
+
+401 error must be completely eliminated
