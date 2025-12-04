@@ -714,15 +714,19 @@ export class DatabaseStorage implements IStorage {
   async createChalan(chalan: InsertChalan, items: InsertChalanItem[]): Promise<Chalan> {
     const chalanNumber = `CH-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     
-    const [created] = await db.insert(chalans).values({
+    const chalanInsert: typeof chalans.$inferInsert = {
       ...chalan,
       chalanNumber,
-    }).returning();
+    };
+    
+    const [created] = await db.insert(chalans).values(chalanInsert).returning();
 
     if (items.length > 0) {
-      await db.insert(chalanItems).values(
-        items.map(item => ({ ...item, chalanId: created.id }))
-      );
+      const itemsInsert: (typeof chalanItems.$inferInsert)[] = items.map(item => ({
+        ...item,
+        chalanId: created.id,
+      }));
+      await db.insert(chalanItems).values(itemsInsert);
     }
 
     await db.update(projects).set({ hasChalanCreated: true }).where(eq(projects.id, chalan.projectId));
@@ -751,12 +755,14 @@ export class DatabaseStorage implements IStorage {
     const existingRevisions = await this.getChalanRevisions(chalanId);
     const revisionNumber = existingRevisions.length + 1;
 
-    const [created] = await db.insert(chalanRevisions).values({
+    const revisionInsert: typeof chalanRevisions.$inferInsert = {
       chalanId,
       revisionNumber,
       changes,
       revisedBy: userId || null,
-    }).returning();
+    };
+    
+    const [created] = await db.insert(chalanRevisions).values(revisionInsert).returning();
 
     return created;
   }

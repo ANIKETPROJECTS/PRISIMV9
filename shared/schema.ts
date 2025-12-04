@@ -320,9 +320,9 @@ export const insertEditorSchema = createInsertSchema(editors).omit({ id: true, c
 export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertBookingLogSchema = createInsertSchema(bookingLogs).omit({ id: true, createdAt: true });
 export const insertEditorLeaveSchema = createInsertSchema(editorLeaves).omit({ id: true, createdAt: true });
-export const insertChalanSchema = createInsertSchema(chalans).omit({ id: true, createdAt: true });
-export const insertChalanItemSchema = createInsertSchema(chalanItems).omit({ id: true });
-export const insertChalanRevisionSchema = createInsertSchema(chalanRevisions).omit({ id: true, createdAt: true });
+export const insertChalanSchema = createInsertSchema(chalans).omit({ id: true, createdAt: true, chalanNumber: true });
+export const insertChalanItemSchema = createInsertSchema(chalanItems).omit({ id: true, chalanId: true });
+export const insertChalanRevisionSchema = createInsertSchema(chalanRevisions).omit({ id: true, createdAt: true, revisionNumber: true, chalanId: true });
 export const insertUserModuleAccessSchema = createInsertSchema(userModuleAccess).omit({ id: true });
 
 // Types
