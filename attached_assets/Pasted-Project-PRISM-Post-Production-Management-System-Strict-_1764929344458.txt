@@ -1,0 +1,149 @@
+Project: PRISM – Post-Production Management System
+Strict Instructions:
+
+❌ Do NOT break any existing workflow (booking, reports, chalan, conflict, etc.)
+
+❌ Do NOT change dashboard structure or layout logic
+
+✅ Apply only the UI behavior & alignment changes listed below
+
+✅ Use existing database and authentication system
+
+✅ 1. ADMIN PROFILE (AD ICON) → VIEW MODE ONLY (NO EDIT HERE)
+❌ Current Problem:
+
+Admin icon currently allows editing or behaves inconsistently
+
+✅ Required Final Behavior:
+
+✅ When user clicks on:
+
+AD (Admin Profile Icon)
+
+
+✅ Open PROFILE VIEW MODE ONLY (READ-ONLY)
+✅ Show all details clearly:
+
+Username
+
+Full Name
+
+Role
+
+Company
+
+Mobile Number
+
+Email
+
+Status (Active/Inactive)
+
+Last Login
+
+✅ In this view:
+
+❌ NO inline editing allowed
+
+❌ NO save button
+
+✅ Only show:
+
+Close
+
+Go to User Management (Edit There) button
+
+✅ Profile editing must be done ONLY inside:
+
+User Management → Edit User
+
+
+✅ This ensures:
+
+Clean security flow
+
+Single source of truth for editing
+
+No accidental updates from profile icon
+
+✅ 2. PRISM HEADING BACKGROUND COLOR – DARK TO LIGHT BLUE
+❌ Current Issue:
+
+PRISM header background is too dark
+
+✅ Required Fix:
+
+✅ Change PRISM heading background color to:
+
+✅ Normal Light Blue
+
+✅ Slightly reduced darkness (soft professional look)
+
+✅ Keep:
+
+Logo
+
+Text styling
+
+Heading position
+
+Layout structure
+exactly the same
+
+✅ Goal:
+
+Softer UI
+
+Easier on eyes
+
+Modern appearance
+
+✅ 3. HEADER ALIGNMENT FIX – DAY/TIME RIGHT, BOOKING LEFT
+❌ Current Issue:
+
+Day/Time and Booking title are not aligned properly
+
+Spacing is cramped
+
+✅ Required Alignment Rules:
+
+✅ Shift:
+
+✅ Day + Time → Right side
+(near PRISM company selector)
+
+✅ Booking / Booking Calendar title → Left side
+
+✅ Add:
+
+✅ Clean blank spacing between left and right sections
+
+✅ Proper horizontal alignment
+
+✅ No overlapping
+
+✅ No text wrapping issues
+
+✅ Result should look like:
+
+[ Booking Calendar ]              [ Day + Live Time ]   [ Company ]
+
+
+✅ Must work properly on:
+
+Desktop
+
+Laptop
+
+Small screen resolutions
+
+✅ FINAL ACCEPTANCE CRITERIA
+
+After implementation:
+
+✅ Clicking AD icon opens VIEW-ONLY profile
+✅ Editing allowed only via User Management
+✅ PRISM header background is now light blue
+✅ Booking title is on the left
+✅ Day + Time is aligned to the right
+✅ Clean spacing between header elements
+✅ No existing logic or workflow is affected
