@@ -9,6 +9,7 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon"
+      className="smooth-hover"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
       data-testid="button-theme-toggle"
     >

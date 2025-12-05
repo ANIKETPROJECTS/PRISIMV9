@@ -78,7 +78,7 @@ export function Header({
               setCompany(selected || null);
             }}
           >
-            <SelectTrigger className="w-[180px]" data-testid="header-company-select">
+            <SelectTrigger className="w-[180px] smooth-hover" data-testid="header-company-select">
               <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
               <SelectValue placeholder="Select company" />
             </SelectTrigger>
@@ -95,7 +95,7 @@ export function Header({
         {/* Right side: Locked Live Date (no picker, auto-updates at midnight) */}
         {showDatePicker && (
           <div 
-            className="flex items-center gap-2 px-3 py-2 border rounded-md bg-muted/30 text-sm"
+            className="flex items-center gap-2 px-3 py-2 border rounded-md bg-muted/30 text-sm smooth-hover cursor-default"
             data-testid="header-locked-date"
           >
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />

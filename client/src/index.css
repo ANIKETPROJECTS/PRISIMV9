@@ -316,4 +316,17 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;  /* Chrome, Safari, Opera */
   }
+
+  /* Smooth hover transition for interactive elements */
+  .smooth-hover {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .smooth-hover:hover {
+    transform: translateY(-1px);
+  }
+
+  .smooth-hover:active {
+    transform: translateY(0);
+  }
 }
