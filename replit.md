@@ -133,3 +133,32 @@ Preferred communication style: Simple, everyday language.
 - Environment variable required: `DATABASE_URL` for PostgreSQL connection
 - Production build creates bundled server (dist/index.cjs) and static client assets (dist/public)
 - Development mode runs unbundled with Vite middleware for HMR
+
+## Recent Changes (December 2025)
+
+### User Profile Modal
+- Added user profile modal accessible by clicking the avatar in the sidebar footer
+- Supports viewing and editing profile information (full name, email, mobile)
+- Security PIN update functionality with validation
+- Located in `client/src/components/user-profile-modal.tsx`
+
+### Booking Calendar Quick Add
+- Hover over calendar dates to see "+" icon for quick booking creation
+- Works for all current and future dates (not restricted to current month)
+- Past dates are muted and don't show the quick add option
+
+### Demo Data
+- Comprehensive demo data for December 2025 including:
+  - 10 production company customers
+  - 15 projects (movies, web series, serials, ads, teasers)
+  - 8 rooms (sound stages, music studio, VFX bays, editing suites)
+  - 10 editors (video, audio, VFX, colorist, DI)
+  - 15 bookings with various statuses
+  - 5 editor leaves
+  - 5 chalans with items
+- Seed script: `server/seed-demo.ts`
+
+### Design Theme
+- Light blue color scheme (primary: hsl(199 89% 48%))
+- Production/film-themed background images
+- Professional, clean interface optimized for information density

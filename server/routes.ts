@@ -107,6 +107,70 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
+  app.get("/api/users/:id/profile", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await storage.getUser(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        mobile: user.mobile || "",
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/users/:id/profile", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { fullName, email, mobile } = req.body;
+      const user = await storage.updateUser(id, { fullName, email, mobile });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        mobile: user.mobile || "",
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/users/:id/password", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { currentPin, newPin } = req.body;
+      
+      if (!currentPin || !newPin) {
+        return res.status(400).json({ message: "Current PIN and new PIN are required" });
+      }
+      
+      if (newPin.length < 4) {
+        return res.status(400).json({ message: "New PIN must be at least 4 characters" });
+      }
+      
+      const user = await storage.getUser(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (user.securityPin !== currentPin) {
+        return res.status(401).json({ message: "Current PIN is incorrect" });
+      }
+      
+      await storage.updateUser(id, { securityPin: newPin });
+      res.json({ message: "Security PIN updated successfully" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   app.get("/api/users/:id/access", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

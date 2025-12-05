@@ -12,6 +12,8 @@ import {
   getDay,
   startOfWeek,
   endOfWeek,
+  isBefore,
+  startOfDay,
 } from "date-fns";
 import {
   ChevronLeft,
@@ -275,13 +277,16 @@ export default function BookingPage() {
               const dayBookings = getBookingsForDay(day);
               const isToday = isSameDay(day, new Date());
               const isCurrentMonth = isSameMonth(day, currentMonth);
+              const isPastDate = isBefore(startOfDay(day), startOfDay(new Date()));
+              const canAddBooking = !isPastDate;
 
               return (
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "bg-background min-h-[120px] p-1 flex flex-col",
-                    !isCurrentMonth && "bg-muted/30"
+                    "bg-background min-h-[120px] p-1 flex flex-col group",
+                    !isCurrentMonth && "bg-muted/30",
+                    isPastDate && isCurrentMonth && "bg-muted/10"
                   )}
                   data-testid={`calendar-day-${format(day, "yyyy-MM-dd")}`}
                 >
@@ -290,16 +295,17 @@ export default function BookingPage() {
                       className={cn(
                         "text-sm w-7 h-7 flex items-center justify-center rounded-full",
                         isToday && "bg-primary text-primary-foreground font-medium",
-                        !isCurrentMonth && "text-muted-foreground"
+                        !isCurrentMonth && "text-muted-foreground",
+                        isPastDate && isCurrentMonth && "text-muted-foreground/70"
                       )}
                     >
                       {format(day, "d")}
                     </span>
-                    {isCurrentMonth && (
+                    {canAddBooking && (
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:opacity-100"
+                        className="h-6 w-6 invisible group-hover:visible transition-all"
                         onClick={() => handleNewBooking(day)}
                         data-testid={`button-add-booking-${format(day, "yyyy-MM-dd")}`}
                       >
@@ -323,9 +329,9 @@ export default function BookingPage() {
                     </div>
                   </ScrollArea>
 
-                  {dayBookings.length === 0 && isCurrentMonth && (
+                  {dayBookings.length === 0 && canAddBooking && (
                     <div
-                      className="flex-1 flex items-center justify-center border border-dashed rounded-md text-xs text-muted-foreground cursor-pointer hover-elevate"
+                      className="flex-1 flex items-center justify-center border border-dashed rounded-md text-xs text-muted-foreground cursor-pointer hover-elevate invisible group-hover:visible transition-all"
                       onClick={() => handleNewBooking(day)}
                     >
                       <Plus className="h-3 w-3 mr-1" />

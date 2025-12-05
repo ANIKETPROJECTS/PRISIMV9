@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Calendar,
@@ -39,6 +40,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth-context";
+import { UserProfileModal } from "@/components/user-profile-modal";
 
 const operationsItems = [
   { title: "Booking", url: "/", icon: Calendar },
@@ -113,6 +115,7 @@ function SidebarNavGroup({
 
 export function AppSidebar() {
   const { user, company, logout } = useAuth();
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -156,12 +159,21 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-4">
         <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="text-xs font-medium">
-              {user?.username?.slice(0, 2).toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
+          <button
+            onClick={() => setProfileModalOpen(true)}
+            className="cursor-pointer hover-elevate rounded-full"
+            data-testid="button-user-profile"
+          >
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="text-xs font-medium bg-sidebar-primary text-sidebar-primary-foreground">
+                {user?.username?.slice(0, 2).toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+          </button>
+          <div 
+            className="flex-1 min-w-0 cursor-pointer"
+            onClick={() => setProfileModalOpen(true)}
+          >
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium truncate">
                 {user?.username || "User"}
@@ -179,6 +191,11 @@ export function AppSidebar() {
           </SidebarMenuButton>
         </div>
       </SidebarFooter>
+
+      <UserProfileModal 
+        open={profileModalOpen} 
+        onOpenChange={setProfileModalOpen} 
+      />
     </Sidebar>
   );
 }

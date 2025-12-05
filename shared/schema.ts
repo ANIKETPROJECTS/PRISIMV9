@@ -27,6 +27,9 @@ export const users = pgTable("users", {
   securityPin: text("security_pin").notNull(),
   role: userRoleEnum("role").notNull().default("non_gst"),
   companyId: integer("company_id").references(() => companies.id),
+  fullName: text("full_name"),
+  email: text("email"),
+  mobile: text("mobile"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

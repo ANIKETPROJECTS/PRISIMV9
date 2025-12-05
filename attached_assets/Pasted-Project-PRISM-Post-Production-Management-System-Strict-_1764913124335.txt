@@ -1,0 +1,267 @@
+Project: PRISM – Post-Production Management System
+Strict Instructions:
+
+❌ Do NOT change any existing workflow logic
+
+❌ Do NOT break booking, chalan, reports, conflict logic
+
+✅ Only add the features and UI polish mentioned below
+
+✅ Use the existing database
+
+✅ Keep dashboard layout unchanged (only color allowed)
+
+✅ 1. ADD “+” ICON ON EACH DATE BOX FOR QUICK BOOKING
+✅ Required Behavior:
+
+✅ Add a small “+” icon at the TOP-RIGHT corner of each date box in the calendar
+✅ The “+” icon must:
+
+Be visible ONLY on hover
+
+Be hidden by default
+
+Appear only for:
+
+✅ Current date
+
+✅ Future dates
+
+❌ Must NOT appear on past dates
+
+✅ When user clicks the “+” icon:
+
+Open the Booking Form in CREATE mode
+
+Auto-select:
+
+✅ Clicked Date
+
+Keep:
+
+Room, Customer, Project, Editor empty for manual selection
+
+✅ This new “+” icon must completely replace the bottom “+ Add” button workflow
+✅ Do NOT remove the old button — just make this the primary shortcut
+
+✅ Disable “+” icon if:
+
+User does not have Booking Create permission
+
+✅ 2. ADD 10–15 DEMO DATA IN ALL MODULES (DECEMBER 2025 ONLY)
+
+✅ Insert 10–15 realistic demo records in:
+
+✅ Masters:
+
+Customers
+
+Projects
+
+Rooms
+
+Editors
+
+Users
+
+✅ Operations:
+
+Bookings
+
+Leave Entries
+
+Chalan Entry
+
+✅ Reports:
+
+Booking Report
+
+Editor Report
+
+Conflict Report (Editor + Room both)
+
+Chalan Report
+
+✅ Demo Booking Data Rules:
+
+✅ All booking data must be ONLY for:
+
+December 2025
+
+
+✅ Include:
+
+Confirmed bookings
+
+Completed bookings
+
+Cancelled bookings
+
+Repeated bookings
+
+Chalan-generated bookings
+
+Conflict bookings
+
+✅ All demo data must:
+
+Appear correctly in:
+
+Calendar
+
+Booking Report
+
+Conflict Report
+
+Editor Report
+
+Chalan Report
+
+Be filtered correctly by:
+
+Date
+
+Customer
+
+Room
+
+Editor
+
+Status
+
+✅ 3. APPLY LIGHT BLUE THEME TO WHOLE PROJECT (UI POLISH)
+
+✅ Apply a light blue theme across the entire project, including:
+
+Sidebar menu
+
+Page backgrounds
+
+Headers
+
+Card backgrounds
+
+Active tabs
+
+Buttons (primary)
+
+✅ Color Style Guidelines:
+
+✅ Light Blue → Primary background
+
+✅ Slight darker blue → Sidebar
+
+✅ White → Cards & tables
+
+✅ Soft green → Success
+
+✅ Soft red → Cancel/Delete
+
+✅ Soft orange → Warnings
+
+❌ Do NOT:
+
+Change any layout
+
+Change grid structure
+
+Change dashboard widget placement
+
+Change navigation structure
+
+✅ UI must look:
+
+Clean
+
+Modern
+
+Soft
+
+Professional
+
+Attractive
+
+✅ 4. ADMIN PROFILE (AD ICON) → OPEN PROFILE VIEW / EDIT MODE
+❌ Current Problem:
+
+Clicking AD (Admin icon) does nothing or only logs out
+
+✅ Required Fix:
+
+✅ When user clicks on:
+
+AD (Admin profile icon)
+
+
+✅ Open Profile View / Edit Modal or Page, showing:
+
+Username
+
+Full Name
+
+Role
+
+Company
+
+Mobile Number
+
+Email
+
+Change Password option
+
+Profile photo (optional)
+
+✅ Allow:
+
+✅ Edit Profile
+
+✅ Update Password
+
+✅ Save Changes with validation
+
+✅ Only Admin can:
+
+Edit role
+
+Edit company
+
+✅ Normal users:
+
+Can edit only:
+
+Name
+
+Mobile
+
+Email
+
+Password
+
+✅ Add:
+
+Save button
+
+Cancel button
+
+Success toast after update
+
+✅ FINAL ACCEPTANCE CRITERIA
+
+After implementation:
+
+✅ “+” hover icon appears on calendar date boxes
+✅ Booking form opens with clicked date auto-selected
+✅ Demo data visible across all modules
+✅ Only December 2025 contains demo bookings
+✅ Light blue theme applied across system
+✅ Sidebar & UI look attractive
+✅ Clicking AD icon opens editable profile
+✅ Profile updates save correctly
+✅ No existing booking/chalan/report logic breaks
+
+✅ OPTIONAL IF NEEDED (SAFE TO ADD)
+
+✅ Hover animation on “+” icon
+✅ Profile avatar upload
+✅ Demo company split (PRISM / Airavata)
+✅ Role-based profile field locking
