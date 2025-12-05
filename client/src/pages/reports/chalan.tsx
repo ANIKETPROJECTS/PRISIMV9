@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import { FileSpreadsheet, Download, Eye, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,8 +30,8 @@ import { EmptyState } from "@/components/empty-state";
 import type { ChalanWithItems, Customer } from "@shared/schema";
 
 export default function ChalanReportPage() {
-  const [fromDate, setFromDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [toDate, setToDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+  const [toDate, setToDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
   const [selectedCustomer, setSelectedCustomer] = useState<string>("all");
   const [showCancelled, setShowCancelled] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);

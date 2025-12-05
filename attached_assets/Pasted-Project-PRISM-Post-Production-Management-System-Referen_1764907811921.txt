@@ -1,0 +1,293 @@
+Project: PRISM – Post-Production Management System
+Reference: Follow strictly the workflow defined in PRISM Requirement Document (Operations + Reports + Chalan section)
+Strict Rules:
+
+❌ DO NOT change dashboard design or layout
+
+✅ Fix only logic, workflow, APIs, database mappings, and reports
+
+✅ Use existing database
+
+✅ Do NOT break existing modules
+
+✅ Follow existing UI design pattern
+
+✅ 1. FIX “NO CHALANS FOUND” ISSUE (ROOT CAUSE + DISPLAY FIX)
+❌ Current Problem:
+
+Chalan Report shows:
+
+No chalans found
+
+
+even when bookings exist
+
+Chalan Entry is not properly generating data
+
+Date filters and customer filter return empty results
+
+✅ REQUIRED FIX (VERY IMPORTANT):
+
+✅ Ensure Chalan Report fetch logic correctly joins:
+
+Booking
+
+Project
+
+Customer
+
+Editor
+
+Room
+
+Company
+
+✅ Chalan Report must show data based on:
+
+From Date
+
+To Date
+
+Customer
+
+Cancel Chalan checkbox
+
+✅ If a Chalan exists in DB → it must appear in report
+
+✅ Fix these possible causes:
+
+Wrong date format comparison
+
+Missing company_id filter
+
+Booking not linked to Chalan correctly
+
+Wrong API endpoint mapping
+
+Frontend not binding API response to table
+
+✅ After fix:
+
+Total Chalans count must update
+
+Total Amount must calculate correctly
+
+✅ 2. COMPLETE BILLING & CHALAN WORKFLOW (AS PER PRISM DOCUMENT)
+
+Follow this exact logic from the requirement:
+
+✅ A) BILLING TIME LOGIC
+Total Booking Time = To Time – From Time  
+Total Actual Time = Actual To – Actual From  
+Final Billable Time = Total Actual Time – Break Hours  
+Hourly Charge × Final Billable Time = Billing Amount
+
+
+✅ Auto-calculate live on Booking Edit
+✅ Store final billable hours in DB
+✅ Prevent negative values
+✅ Break Hours must reduce billing
+
+✅ B) CHALAN GENERATION RULE
+
+✅ Chalan can be created only when:
+
+Booking Status = Confirmed / Completed
+
+Actual From & Actual To are entered
+
+✅ Once Chalan is created:
+
+Mark project:
+
+Chalan: YES / NO
+
+
+Prevent duplicate Chalan for same booking
+
+Link Chalan ID to Booking ID
+
+✅ Chalan must contain:
+
+Customer
+
+Project
+
+Room
+
+Editor
+
+Booking Date
+
+From–To
+
+Actual From–To
+
+Break Hours
+
+Final Billable Time
+
+Amount
+
+Cancel flag
+
+✅ Chalan must reflect instantly in:
+
+✅ Chalan Report
+
+✅ Booking Report
+
+✅ Project Chalan Status
+
+✅ 3. CHALAN ENTRY – FULL FIX
+
+✅ Chalan Entry screen must:
+
+Show only eligible bookings
+
+Auto-pull booking details
+
+Auto-calculate billing
+
+Save chalan correctly
+
+✅ Validation:
+
+No duplicate Chalan per booking
+
+No empty billing values
+
+No zero hours Chalan
+
+✅ After save:
+
+Redirect to Chalan Report
+
+Show success message
+
+Update Chalan count
+
+✅ 4. CHALAN REVISE – FULL FIX
+
+✅ Chalan Revise must:
+
+Load existing chalan only
+
+Allow:
+
+Date edit
+
+Billable hours correction
+
+Amount correction
+
+Cancel flag toggle
+
+Maintain:
+✅ Revision history
+
+Prevent:
+❌ Editing deleted chalan
+
+✅ Cancelled Chalan must:
+
+Appear in Chalan Report when “Show Cancelled” is checked
+
+Print cancelled slip
+
+✅ 5. ADD 2 CONFLICT REPORTS (PROPER SEPARATION)
+✅ CONFLICT REPORT – TYPE 1
+
+Editor Conflict Report
+
+Same editor booked at same time on same date
+
+Fields:
+Customer, Project, Editor, Room, From Time, To Time, Status
+
+✅ CONFLICT REPORT – TYPE 2
+
+Room Conflict Report
+
+Same room booked multiple times at same time
+
+Fields:
+Customer, Project, Room, Editor, From Time, To Time, Status
+
+✅ Both must:
+
+Respect Ignore Conflict flag
+
+Reflect only true conflicts
+
+Update live from booking data
+
+Export to CSV
+
+✅ 6. INSERT 2–3 DEMO CHALAN DATA (DECEMBER 2025)
+
+✅ Add demo data for:
+
+✅ 2–3 Bookings
+
+✅ Completed Status
+
+✅ Actual Time Filled
+
+✅ 2–3 Generated Chalans
+
+✅ One Cancelled Chalan
+
+✅ All demo data must appear in:
+
+Chalan Entry
+
+Chalan Report
+
+Booking Report
+
+Editor Report
+
+Conflict Reports
+
+✅ Date range:
+
+December 4–20, 2025
+
+✅ 7. COMPANY-BASED & ROLE-BASED SAFETY
+
+✅ Chalan must respect:
+
+Company selection (PRISM / Airavata)
+
+User role access:
+
+Admin → Full Access
+
+Billing → Chalan Only
+
+Non-Billing → No Chalan Access
+
+✅ No cross-company visibility
+
+✅ 8. FINAL EXPECTED RESULT
+
+After implementation:
+
+✅ Chalan Report shows data correctly
+✅ Billing calculates accurately
+✅ Chalan Entry generates records
+✅ Chalan Revise edits correctly
+✅ Cancelled Chalan prints correctly
+✅ 2 Conflict Reports work properly
+✅ Demo data visible in December 2025
+✅ No more “No Chalans Found” with valid data
+
+✅ OPTIONAL (IF NEEDED):
+
+✅ Add export PDF to Chalan
+✅ Add print format with:
+
+Project rows
+
+Signature block (5 signs as per document)

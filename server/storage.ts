@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, gte, lte, sql, desc, or } from "drizzle-orm";
+import { eq, and, gte, lte, sql, desc, or, inArray } from "drizzle-orm";
 import {
   companies,
   users,
@@ -674,10 +674,10 @@ export class DatabaseStorage implements IStorage {
     
     const chalanIds = result.map(r => r.chalans.id);
     const items = chalanIds.length > 0
-      ? await db.select().from(chalanItems).where(sql`${chalanItems.chalanId} = ANY(${chalanIds})`)
+      ? await db.select().from(chalanItems).where(inArray(chalanItems.chalanId, chalanIds))
       : [];
     const revisions = chalanIds.length > 0
-      ? await db.select().from(chalanRevisions).where(sql`${chalanRevisions.chalanId} = ANY(${chalanIds})`)
+      ? await db.select().from(chalanRevisions).where(inArray(chalanRevisions.chalanId, chalanIds))
       : [];
 
     return result.map(r => ({

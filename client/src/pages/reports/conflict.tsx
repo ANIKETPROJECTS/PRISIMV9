@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import { AlertTriangle, Calendar, Download, Clock, Building, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,8 +20,8 @@ import { EmptyState } from "@/components/empty-state";
 import type { BookingWithRelations, Room, Editor } from "@shared/schema";
 
 export default function ConflictReportPage() {
-  const [fromDate, setFromDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [toDate, setToDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+  const [toDate, setToDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
   const [selectedRoom, setSelectedRoom] = useState<string>("all");
   const [selectedEditor, setSelectedEditor] = useState<string>("all");
 

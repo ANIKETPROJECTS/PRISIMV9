@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import { UserCog, Download, Clock, Film, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,8 +35,8 @@ interface EditorReport {
 }
 
 export default function EditorReportPage() {
-  const [fromDate, setFromDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [toDate, setToDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+  const [toDate, setToDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
   const [selectedEditor, setSelectedEditor] = useState<string>("all");
 
   const editorQueryParams = new URLSearchParams({
