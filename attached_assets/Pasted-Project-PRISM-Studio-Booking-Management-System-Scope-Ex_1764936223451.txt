@@ -1,0 +1,228 @@
+Project: PRISM – Studio Booking & Management System
+Scope: Existing Project UI + Data Enhancement
+Strict Rules:
+
+❌ Do NOT break any existing working logic
+
+❌ Do NOT remove any current features
+
+✅ Only improve UI behavior & insert demo data
+
+✅ Database structure should remain unchanged unless absolutely required
+
+✅ All changes must be production-safe
+
+✅ 1. SIDEBAR TEXT ALIGNMENT, SPACING & PERMANENT DARK BACKGROUND
+✅ Required Changes:
+
+✅ In the sidebar:
+
+The main section titles:
+
+Operations
+Masters
+Reports
+Utility
+
+
+must be:
+
+Shifted more towards LEFT
+
+Given more vertical gap from the top
+
+Proper even spacing between sections
+
+✅ Each of these main headings must have:
+
+✅ Full horizontal width background
+
+✅ Background color must be:
+
+A dark shade that matches/light-contrasts the light blue theme
+
+Permanent (always visible, not just on hover)
+
+✅ Text must be:
+
+White or high-contrast
+
+Clean, bold but not oversized
+
+✅ This background styling must remain visible at all times.
+
+✅ 2. OPERATION SECTION MUST BE OPEN BY DEFAULT
+
+✅ On page load / after login:
+
+✅ Operations section must be expanded by default
+
+✅ Others (Masters, Reports, Utility) should remain collapsed
+
+✅ Clicking other headings should open smoothly and close the rest (accordion behavior)
+
+✅ Sidebar open/close must be:
+
+Smooth animation
+
+No UI jump
+
+Clean premium transition
+
+✅ 3. COMPANY SELECTION DURING LOGIN (MANDATORY)
+
+✅ Add a Company Select Dropdown in Login Form
+✅ Login must NOT work without selecting a company
+
+✅ Demo Login Credentials:
+✅ For PRISM:
+Username: admin
+PIN: 1234
+Company: PRISM
+
+✅ For Airavata Studio:
+Username: airavata_admin
+PIN: 1234
+Company: Airavata Studio
+
+
+✅ Validation Rules:
+
+If username + PIN + Company mismatch → login must fail
+
+Each company must:
+
+See only its own dashboard data
+
+See only its own bookings, master data & reports
+
+✅ 4. ADD 15 DEMO DATA RECORDS PER MODULE (ALL SECTIONS)
+
+✅ Insert minimum 15 demo records in each module:
+
+✅ Masters:
+
+Customers
+
+Projects
+
+Rooms
+
+Editors
+
+Users
+
+✅ Operations:
+
+Bookings
+
+Leaves
+
+Chalans
+
+✅ Reports:
+
+Booking Reports
+
+Editor Reports
+
+Chalan Reports
+
+Conflict Reports
+
+✅ Utility:
+
+Logs
+
+Settings-related demo entries if available
+
+✅ Demo Data Rules:
+
+✅ Data must look realistic
+✅ Spread across multiple dates
+✅ Every 1–2 days:
+
+1 to 3 bookings must exist
+✅ Include:
+
+Confirmed bookings
+
+Cancelled bookings
+
+Conflict bookings
+
+Chalan-generated bookings
+
+✅ At least:
+
+✅ 2 Room conflicts
+
+✅ 2 Editor conflicts
+
+✅ All demo data must:
+
+Appear correctly in:
+
+Dashboard
+
+Calendar
+
+Booking Reports
+
+Conflict Reports
+
+Chalan Reports
+
+✅ 5. STICKY ALL DAYS HEADER IN DASHBOARD BOOKING VIEW
+❌ Current Issue:
+
+When scrolling the booking dashboard, the day/date row disappears
+
+✅ Required Fix:
+
+✅ Make the entire top row of days (Sun–Sat with dates):
+
+Sticky fixed at top while scrolling
+
+Always visible
+
+No overlap with:
+
+Header
+
+Calendar navigation
+
+Must scroll only the booking cards below
+
+✅ Add:
+
+Soft shadow under sticky row
+
+Smooth transition when it becomes sticky
+
+✅ FINAL VALIDATION CHECKLIST
+
+✅ Sidebar headings shifted left
+✅ Proper spacing from the top
+✅ Full-width dark background on all headings
+✅ Operations opens by default
+✅ Smooth accordion animation
+✅ Company selection added in login
+✅ PRISM & Airavata credentials work
+✅ 15 demo records added in every module
+✅ Conflicts visible
+✅ Sticky days row works properly
+
+✅ IMPORTANT DELIVERY NOTE FOR REPLIT
+
+After implementation:
+
+✅ Test both company logins
+
+✅ Verify demo data appears everywhere
+
+✅ Ensure dashboard scrolling does not break layout
+
+✅ Ensure sidebar background does not flicker
+
+✅ Ensure no existing production feature is broken
