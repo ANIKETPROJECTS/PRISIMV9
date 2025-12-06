@@ -156,6 +156,25 @@ async function seedDemoData() {
   // Get primary contacts for booking
   const contacts = await db.select().from(customerContacts);
 
+  // Create Demo Bookings for November 2025 (15 bookings)
+  const novemberBookingData = [
+    { roomId: createdRooms[0].id, customerId: createdCustomers[0].id, projectId: createdProjects[0].id, editorId: createdEditors[0].id, bookingDate: "2025-11-03", fromTime: "09:00", toTime: "18:00", status: "confirmed" as const },
+    { roomId: createdRooms[1].id, customerId: createdCustomers[1].id, projectId: createdProjects[1].id, editorId: createdEditors[1].id, bookingDate: "2025-11-04", fromTime: "10:00", toTime: "19:00", status: "confirmed" as const },
+    { roomId: createdRooms[2].id, customerId: createdCustomers[2].id, projectId: createdProjects[2].id, editorId: createdEditors[5].id, bookingDate: "2025-11-05", fromTime: "08:00", toTime: "17:00", status: "confirmed" as const },
+    { roomId: createdRooms[3].id, customerId: createdCustomers[3].id, projectId: createdProjects[3].id, editorId: createdEditors[2].id, bookingDate: "2025-11-06", fromTime: "09:00", toTime: "18:00", status: "confirmed" as const },
+    { roomId: createdRooms[4].id, customerId: createdCustomers[4].id, projectId: createdProjects[4].id, editorId: createdEditors[3].id, bookingDate: "2025-11-07", fromTime: "09:00", toTime: "18:00", status: "confirmed" as const },
+    { roomId: createdRooms[5].id, customerId: createdCustomers[5].id, projectId: createdProjects[5].id, editorId: createdEditors[4].id, bookingDate: "2025-11-10", fromTime: "10:00", toTime: "18:00", status: "confirmed" as const },
+    { roomId: createdRooms[6].id, customerId: createdCustomers[6].id, projectId: createdProjects[6].id, editorId: createdEditors[8].id, bookingDate: "2025-11-11", fromTime: "09:00", toTime: "17:00", status: "confirmed" as const },
+    { roomId: createdRooms[0].id, customerId: createdCustomers[7].id, projectId: createdProjects[7].id, editorId: createdEditors[0].id, bookingDate: "2025-11-12", fromTime: "08:00", toTime: "20:00", status: "confirmed" as const },
+    { roomId: createdRooms[1].id, customerId: createdCustomers[8].id, projectId: createdProjects[8].id, editorId: createdEditors[1].id, bookingDate: "2025-11-13", fromTime: "09:00", toTime: "18:00", status: "confirmed" as const },
+    { roomId: createdRooms[2].id, customerId: createdCustomers[9].id, projectId: createdProjects[9].id, editorId: createdEditors[5].id, bookingDate: "2025-11-14", fromTime: "09:00", toTime: "18:00", status: "confirmed" as const },
+    { roomId: createdRooms[3].id, customerId: createdCustomers[10].id, projectId: createdProjects[10].id, editorId: createdEditors[2].id, bookingDate: "2025-11-17", fromTime: "09:00", toTime: "18:00", status: "confirmed" as const },
+    { roomId: createdRooms[4].id, customerId: createdCustomers[11].id, projectId: createdProjects[11].id, editorId: createdEditors[3].id, bookingDate: "2025-11-18", fromTime: "10:00", toTime: "19:00", status: "confirmed" as const },
+    { roomId: createdRooms[5].id, customerId: createdCustomers[12].id, projectId: createdProjects[12].id, editorId: createdEditors[4].id, bookingDate: "2025-11-19", fromTime: "09:00", toTime: "17:00", status: "confirmed" as const },
+    { roomId: createdRooms[6].id, customerId: createdCustomers[13].id, projectId: createdProjects[13].id, editorId: createdEditors[8].id, bookingDate: "2025-11-20", fromTime: "08:00", toTime: "18:00", status: "confirmed" as const },
+    { roomId: createdRooms[0].id, customerId: createdCustomers[14].id, projectId: createdProjects[14].id, editorId: createdEditors[0].id, bookingDate: "2025-11-21", fromTime: "09:00", toTime: "18:00", status: "confirmed" as const },
+  ];
+
   // Create Demo Bookings for December 2025 (15 bookings with various statuses)
   const bookingData = [
     // Confirmed bookings
@@ -186,6 +205,18 @@ async function seedDemoData() {
     { roomId: createdRooms[5].id, customerId: createdCustomers[4].id, projectId: createdProjects[11].id, editorId: createdEditors[0].id, bookingDate: "2025-12-20", fromTime: "09:00", toTime: "18:00", status: "confirmed" as const },
   ];
 
+  // Insert November 2025 bookings
+  for (const booking of novemberBookingData) {
+    const contactId = contacts.find(c => c.customerId === booking.customerId)?.id;
+    await db.insert(bookings).values({
+      ...booking,
+      contactId: contactId || null,
+      totalHours: 8,
+    });
+  }
+  console.log(`Created ${novemberBookingData.length} bookings for November 2025`);
+
+  // Insert December 2025 bookings
   for (const booking of bookingData) {
     const contactId = contacts.find(c => c.customerId === booking.customerId)?.id;
     await db.insert(bookings).values({
@@ -220,7 +251,26 @@ async function seedDemoData() {
   }
   console.log(`Created ${leaveData.length} leave entries`);
 
-  // Create Demo Chalans (for chalan reports) - 15 entries
+  // Create Demo Chalans for November 2025 (15 entries)
+  const novemberChalanData = [
+    { chalanNumber: "CH-2025-N01", customerId: createdCustomers[0].id, projectId: createdProjects[0].id, chalanDate: "2025-11-01", totalAmount: 145000, notes: "Initial editing work" },
+    { chalanNumber: "CH-2025-N02", customerId: createdCustomers[1].id, projectId: createdProjects[1].id, chalanDate: "2025-11-03", totalAmount: 235000, notes: "VFX pre-production" },
+    { chalanNumber: "CH-2025-N03", customerId: createdCustomers[2].id, projectId: createdProjects[2].id, chalanDate: "2025-11-05", totalAmount: 165000, notes: "Audio recording session" },
+    { chalanNumber: "CH-2025-N04", customerId: createdCustomers[3].id, projectId: createdProjects[3].id, chalanDate: "2025-11-07", totalAmount: 280000, notes: "Editing phase 1" },
+    { chalanNumber: "CH-2025-N05", customerId: createdCustomers[4].id, projectId: createdProjects[4].id, chalanDate: "2025-11-10", totalAmount: 390000, notes: "Color correction" },
+    { chalanNumber: "CH-2025-N06", customerId: createdCustomers[5].id, projectId: createdProjects[5].id, chalanDate: "2025-11-12", totalAmount: 510000, notes: "VFX compositing" },
+    { chalanNumber: "CH-2025-N07", customerId: createdCustomers[6].id, projectId: createdProjects[6].id, chalanDate: "2025-11-14", totalAmount: 355000, notes: "Sound design" },
+    { chalanNumber: "CH-2025-N08", customerId: createdCustomers[7].id, projectId: createdProjects[7].id, chalanDate: "2025-11-17", totalAmount: 270000, notes: "DI session" },
+    { chalanNumber: "CH-2025-N09", customerId: createdCustomers[8].id, projectId: createdProjects[8].id, chalanDate: "2025-11-19", totalAmount: 165000, notes: "Dubbing session" },
+    { chalanNumber: "CH-2025-N10", customerId: createdCustomers[9].id, projectId: createdProjects[9].id, chalanDate: "2025-11-21", totalAmount: 595000, notes: "Complete package" },
+    { chalanNumber: "CH-2025-N11", customerId: createdCustomers[10].id, projectId: createdProjects[10].id, chalanDate: "2025-11-08", totalAmount: 455000, notes: "Series editing" },
+    { chalanNumber: "CH-2025-N12", customerId: createdCustomers[11].id, projectId: createdProjects[11].id, chalanDate: "2025-11-11", totalAmount: 325000, notes: "Ad film production" },
+    { chalanNumber: "CH-2025-N13", customerId: createdCustomers[12].id, projectId: createdProjects[12].id, chalanDate: "2025-11-13", totalAmount: 210000, notes: "Music video editing" },
+    { chalanNumber: "CH-2025-N14", customerId: createdCustomers[13].id, projectId: createdProjects[13].id, chalanDate: "2025-11-18", totalAmount: 540000, notes: "Final audio mix" },
+    { chalanNumber: "CH-2025-N15", customerId: createdCustomers[14].id, projectId: createdProjects[14].id, chalanDate: "2025-11-20", totalAmount: 180000, notes: "Trailer editing" },
+  ];
+
+  // Create Demo Chalans for December 2025 (15 entries)
   const chalanData = [
     { chalanNumber: "CH-2025-001", customerId: createdCustomers[0].id, projectId: createdProjects[0].id, chalanDate: "2025-12-01", totalAmount: 150000, notes: "Post production work completed" },
     { chalanNumber: "CH-2025-002", customerId: createdCustomers[1].id, projectId: createdProjects[1].id, chalanDate: "2025-12-03", totalAmount: 250000, notes: "VFX work Phase 1" },
@@ -239,10 +289,31 @@ async function seedDemoData() {
     { chalanNumber: "CH-2025-015", customerId: createdCustomers[14].id, projectId: createdProjects[14].id, chalanDate: "2025-12-17", totalAmount: 195000, notes: "Promo videos editing" },
   ];
 
+  // Insert November chalans
+  for (const chalan of novemberChalanData) {
+    const [created] = await db.insert(chalans).values(chalan).returning();
+    
+    await db.insert(chalanItems).values({
+      chalanId: created.id,
+      description: "Editing Hours",
+      quantity: 35,
+      rate: 2500,
+      amount: 87500,
+    });
+    await db.insert(chalanItems).values({
+      chalanId: created.id,
+      description: "Sound Mixing",
+      quantity: 8,
+      rate: 5000,
+      amount: 40000,
+    });
+  }
+  console.log(`Created ${novemberChalanData.length} chalans for November 2025`);
+
+  // Insert December chalans
   for (const chalan of chalanData) {
     const [created] = await db.insert(chalans).values(chalan).returning();
     
-    // Add chalan items
     await db.insert(chalanItems).values({
       chalanId: created.id,
       description: "Editing Hours",
@@ -265,7 +336,7 @@ async function seedDemoData() {
       amount: 60000,
     });
   }
-  console.log(`Created ${chalanData.length} chalans with items`);
+  console.log(`Created ${chalanData.length} chalans for December 2025`);
 
   // Create additional users (ignore duplicates)
   const additionalUsers = [
@@ -287,9 +358,9 @@ async function seedDemoData() {
   console.log("Projects: 15");
   console.log("Rooms: 15");
   console.log("Editors: 15");
-  console.log("Bookings: 15 (December 2025)");
+  console.log("Bookings: 30 (15 Nov + 15 Dec 2025)");
   console.log("Leaves: 15");
-  console.log("Chalans: 15");
+  console.log("Chalans: 30 (15 Nov + 15 Dec 2025)");
   console.log("========================\n");
 
   console.log("Demo data seeding complete!");
