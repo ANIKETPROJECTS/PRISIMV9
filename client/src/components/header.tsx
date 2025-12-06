@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Building2, Clock } from "lucide-react";
+import { useLocation } from "wouter";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -13,6 +15,23 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import type { Company } from "@shared/schema";
+
+const routeTitles: Record<string, string> = {
+  "/": "Booking",
+  "/leaves": "Leaves Entry",
+  "/chalan": "Chalan Entry",
+  "/chalan/revise": "Chalan Revise",
+  "/masters/customers": "Customer Master",
+  "/masters/projects": "Project Master",
+  "/masters/rooms": "Room Master",
+  "/masters/editors": "Editor Master",
+  "/reports/conflict": "Conflict Report",
+  "/reports/booking": "Booking Report",
+  "/reports/editor": "Editor Report",
+  "/reports/chalan": "Chalan Report",
+  "/utility/user-rights": "User Rights",
+  "/utility/users": "User Management",
+};
 
 interface HeaderProps {
   title?: string;
@@ -27,6 +46,9 @@ export function Header({
 }: HeaderProps) {
   const { company, setCompany } = useAuth();
   const [liveDateTime, setLiveDateTime] = useState(new Date());
+  const [location] = useLocation();
+
+  const pageTitle = title || routeTitles[location] || "PRISM";
 
   const { data: companies = [] } = useQuery<Company[]>({
     queryKey: ["/api/companies"],
@@ -55,7 +77,12 @@ export function Header({
     <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b header-light-blue px-4">
       <SidebarTrigger data-testid="button-sidebar-toggle" />
       
-      {/* Spacer to push all content to right */}
+      <Separator orientation="vertical" className="h-6" />
+      
+      <span className="font-semibold text-foreground" data-testid="header-page-title">
+        {pageTitle}
+      </span>
+      
       <div className="flex-1" />
 
       {/* Right side: Day+Time, Date, Company selector, Theme toggle */}
