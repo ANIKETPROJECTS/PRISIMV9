@@ -155,15 +155,32 @@ Preferred communication style: Simple, everyday language.
 - Past dates are muted and don't show the quick add option
 
 ### Demo Data
-- Comprehensive demo data for December 2025 including:
-  - 10 production company customers
+- Comprehensive demo data for November and December 2025 including:
+  - 2 companies (PRISM, Airavata Studio)
+  - 15 production company customers (Dharma Productions, YRF, Red Chillies, etc.)
   - 15 projects (movies, web series, serials, ads, teasers)
-  - 8 rooms (sound stages, music studio, VFX bays, editing suites)
-  - 10 editors (video, audio, VFX, colorist, DI)
-  - 15 bookings with various statuses
-  - 5 editor leaves
-  - 5 chalans with items
-- Seed script: `server/seed-demo.ts`
+  - 15 rooms (sound stages, music studio, VFX bays, editing suites, dubbing, mixing)
+  - 15 editors (video, audio, VFX, colorist, DI types)
+  - 30 bookings (15 Nov + 15 Dec 2025) with various statuses
+  - 15 editor leaves
+  - 30 chalans (15 Nov + 15 Dec 2025) with items
+  - 17 users (2 admins + 15 demo users with various roles)
+
+### Seeding Commands
+```bash
+# Push database schema
+npx drizzle-kit push
+
+# Seed base companies and admin users
+npx tsx server/seed.ts
+
+# Seed comprehensive demo data
+npx tsx server/seed-demo.ts
+```
+
+### Login Credentials
+- PRISM: username="admin", PIN="1234"
+- Airavata Studio: username="airavata_admin", PIN="1234"
 
 ### Design Theme
 - Light blue color scheme (primary: hsl(199 89% 48%))
