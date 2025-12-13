@@ -903,6 +903,22 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
+  // History/Audit trail
+  app.get("/api/history", async (req, res) => {
+    try {
+      const filters = {
+        from: req.query.from as string | undefined,
+        to: req.query.to as string | undefined,
+        entityType: req.query.entityType as string | undefined,
+        action: req.query.action as string | undefined,
+      };
+      const history = await storage.getHistory(filters);
+      res.json(history);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Check if chalan exists for a booking
   app.get("/api/bookings/:id/chalan", async (req, res) => {
     try {

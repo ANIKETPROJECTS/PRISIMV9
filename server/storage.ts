@@ -135,6 +135,9 @@ export interface IStorage {
   
   // Update Chalan
   updateChalan(id: number, chalan: Partial<InsertChalan>, items?: (InsertChalanItem & { id?: number })[]): Promise<Chalan | undefined>;
+
+  // History/Audit trail
+  getHistory(filters?: { from?: string; to?: string; entityType?: string; action?: string }): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1063,6 +1066,103 @@ export class DatabaseStorage implements IStorage {
     }
 
     return updated;
+  }
+
+  // History/Audit trail
+  async getHistory(filters?: { from?: string; to?: string; entityType?: string; action?: string }): Promise<any[]> {
+    const results: any[] = [];
+
+    // Get booking logs if no entityType filter or entityType is 'booking'
+    if (!filters?.entityType || filters.entityType === 'booking') {
+      const bookingConditions = [];
+      if (filters?.from) {
+        bookingConditions.push(gte(bookingLogs.createdAt, new Date(filters.from)));
+      }
+      if (filters?.to) {
+        const toDate = new Date(filters.to);
+        toDate.setHours(23, 59, 59, 999);
+        bookingConditions.push(lte(bookingLogs.createdAt, toDate));
+      }
+      if (filters?.action) {
+        bookingConditions.push(eq(bookingLogs.action, filters.action));
+      }
+
+      let bookingQuery = db
+        .select()
+        .from(bookingLogs)
+        .leftJoin(users, eq(bookingLogs.userId, users.id))
+        .leftJoin(bookings, eq(bookingLogs.bookingId, bookings.id))
+        .leftJoin(projects, eq(bookings.projectId, projects.id));
+
+      if (bookingConditions.length > 0) {
+        bookingQuery = bookingQuery.where(and(...bookingConditions)) as any;
+      }
+
+      const bookingLogsData = await bookingQuery.orderBy(desc(bookingLogs.createdAt)).limit(200);
+
+      bookingLogsData.forEach(row => {
+        results.push({
+          id: row.booking_logs.id,
+          entityType: 'booking',
+          entityId: row.booking_logs.bookingId,
+          entityName: row.projects?.name || `Booking #${row.booking_logs.bookingId}`,
+          action: row.booking_logs.action?.toLowerCase() || 'update',
+          changes: row.booking_logs.changes,
+          userId: row.booking_logs.userId,
+          userName: row.users?.username || null,
+          createdAt: row.booking_logs.createdAt,
+        });
+      });
+    }
+
+    // Get chalan revisions if no entityType filter or entityType is 'chalan'
+    if (!filters?.entityType || filters.entityType === 'chalan') {
+      const chalanConditions = [];
+      if (filters?.from) {
+        chalanConditions.push(gte(chalanRevisions.createdAt, new Date(filters.from)));
+      }
+      if (filters?.to) {
+        const toDate = new Date(filters.to);
+        toDate.setHours(23, 59, 59, 999);
+        chalanConditions.push(lte(chalanRevisions.createdAt, toDate));
+      }
+      // Chalan revisions are always 'revision' action
+      if (filters?.action && filters.action !== 'revision') {
+        // Skip chalan revisions if action filter doesn't match
+      } else {
+        let chalanQuery = db
+          .select()
+          .from(chalanRevisions)
+          .leftJoin(users, eq(chalanRevisions.userId, users.id))
+          .leftJoin(chalans, eq(chalanRevisions.chalanId, chalans.id))
+          .leftJoin(projects, eq(chalans.projectId, projects.id));
+
+        if (chalanConditions.length > 0) {
+          chalanQuery = chalanQuery.where(and(...chalanConditions)) as any;
+        }
+
+        const chalanRevisionsData = await chalanQuery.orderBy(desc(chalanRevisions.createdAt)).limit(200);
+
+        chalanRevisionsData.forEach(row => {
+          results.push({
+            id: row.chalan_revisions.id,
+            entityType: 'chalan',
+            entityId: row.chalan_revisions.chalanId,
+            entityName: row.chalans?.chalanNo || `Chalan #${row.chalan_revisions.chalanId}`,
+            action: 'revision',
+            changes: row.chalan_revisions.changes,
+            userId: row.chalan_revisions.userId,
+            userName: row.users?.username || null,
+            createdAt: row.chalan_revisions.createdAt,
+          });
+        });
+      }
+    }
+
+    // Sort all results by createdAt descending
+    results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return results.slice(0, 200);
   }
 }
 

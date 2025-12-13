@@ -24,6 +24,7 @@ import ChalanReportPage from "@/pages/reports/chalan";
 import UserRightsPage from "@/pages/utility/user-rights";
 import UsersPage from "@/pages/utility/users";
 import CalendarDayView from "@/pages/calendar-day-view";
+import HistoryPage from "@/pages/history";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -69,6 +70,7 @@ function AppRoutes() {
               <Route path="/reports/chalan" component={ChalanReportPage} />
               <Route path="/utility/user-rights" component={UserRightsPage} />
               <Route path="/utility/users" component={UsersPage} />
+              <Route path="/history" component={HistoryPage} />
               <Route component={NotFound} />
             </Switch>
           </SidebarInset>
