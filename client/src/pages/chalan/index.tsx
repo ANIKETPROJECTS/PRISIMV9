@@ -34,11 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { Header } from "@/components/header";
 import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
@@ -445,51 +441,22 @@ export default function ChalanPage() {
       key: "isCancelled",
       header: "Status",
       cell: (row) => (
-        <Popover>
-          <PopoverTrigger asChild>
-            <button 
-              className="cursor-pointer"
-              onClick={(e) => e.stopPropagation()}
-              data-testid={`button-toggle-status-${row.id}`}
-            >
-              <Badge variant={row.isCancelled ? "destructive" : "default"}>
-                {row.isCancelled ? "Cancelled" : "Active"}
-              </Badge>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-40 p-2" align="start">
-            <div className="flex flex-col gap-1">
-              <Button
-                variant={!row.isCancelled ? "secondary" : "ghost"}
-                size="sm"
-                className="justify-start"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (row.isCancelled) {
-                    statusToggleMutation.mutate({ id: row.id, isCancelled: false });
-                  }
-                }}
-                data-testid={`button-set-active-${row.id}`}
-              >
-                Active
-              </Button>
-              <Button
-                variant={row.isCancelled ? "secondary" : "ghost"}
-                size="sm"
-                className="justify-start"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!row.isCancelled) {
-                    statusToggleMutation.mutate({ id: row.id, isCancelled: true });
-                  }
-                }}
-                data-testid={`button-set-cancelled-${row.id}`}
-              >
-                Cancelled
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
+        <div 
+          className="flex items-center gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Switch
+            checked={!row.isCancelled}
+            onCheckedChange={(checked) => {
+              statusToggleMutation.mutate({ id: row.id, isCancelled: !checked });
+            }}
+            disabled={statusToggleMutation.isPending}
+            data-testid={`switch-status-${row.id}`}
+          />
+          <span className={`text-sm ${row.isCancelled ? "text-destructive" : "text-muted-foreground"}`}>
+            {row.isCancelled ? "Cancelled" : "Active"}
+          </span>
+        </div>
       ),
     },
   ];

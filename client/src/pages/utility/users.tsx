@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Header } from "@/components/header";
 import { DataTable, Column } from "@/components/data-table";
@@ -210,6 +211,25 @@ export default function UsersPage() {
     },
   });
 
+  const statusToggleMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
+      return apiRequest("PATCH", `/api/users/${id}`, { isActive });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      toast({ 
+        title: variables.isActive ? "User activated" : "User deactivated",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error updating status",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleOpenDialog = (user?: UserType) => {
     if (user) {
       setEditingUser(user);
@@ -327,9 +347,28 @@ export default function UsersPage() {
       key: "isActive",
       header: "Status",
       cell: (row) => (
-        <Badge variant={row.isActive ? "default" : "secondary"}>
-          {row.isActive ? "Active" : "Inactive"}
-        </Badge>
+        permissions.canEdit("users") ? (
+          <div 
+            className="flex items-center gap-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Switch
+              checked={row.isActive}
+              onCheckedChange={(checked) => {
+                statusToggleMutation.mutate({ id: row.id, isActive: checked });
+              }}
+              disabled={statusToggleMutation.isPending}
+              data-testid={`switch-user-status-${row.id}`}
+            />
+            <span className={`text-sm ${!row.isActive ? "text-muted-foreground" : ""}`}>
+              {row.isActive ? "Active" : "Inactive"}
+            </span>
+          </div>
+        ) : (
+          <Badge variant={row.isActive ? "default" : "secondary"}>
+            {row.isActive ? "Active" : "Inactive"}
+          </Badge>
+        )
       ),
     },
   ];
