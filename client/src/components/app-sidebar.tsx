@@ -49,73 +49,96 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/lib/auth-context";
+import { usePermissions, type Module } from "@/lib/permissions";
 import { UserProfileModal } from "@/components/user-profile-modal";
 import { cn } from "@/lib/utils";
 
-type UserRole = "admin" | "gst" | "non_gst";
+type UserRole = "admin" | "gst" | "non_gst" | "custom";
 
 interface MenuItem {
   title: string;
   url: string;
   icon: any;
   roles?: UserRole[];
+  module?: Module;
 }
 
 interface MenuSection {
   label: string;
   items: MenuItem[];
   roles?: UserRole[];
+  module?: Module;
 }
 
 const operationsItems: MenuItem[] = [
-  { title: "Booking", url: "/", icon: Calendar },
-  { title: "Leaves Entry", url: "/leaves", icon: UserMinus },
-  { title: "Chalan Entry", url: "/chalan", icon: FileText, roles: ["admin"] },
-  { title: "Chalan Revise", url: "/chalan/revise", icon: ClipboardList, roles: ["admin"] },
+  { title: "Booking", url: "/", icon: Calendar, module: "booking" },
+  { title: "Leaves Entry", url: "/leaves", icon: UserMinus, module: "leaves" },
+  { title: "Chalan Entry", url: "/chalan", icon: FileText, roles: ["admin"], module: "chalan" },
+  { title: "Chalan Revise", url: "/chalan/revise", icon: ClipboardList, roles: ["admin"], module: "chalan" },
 ];
 
 const mastersItems: MenuItem[] = [
-  { title: "Customer Master", url: "/masters/customers", icon: Users },
-  { title: "Project Master", url: "/masters/projects", icon: Film },
-  { title: "Room Master", url: "/masters/rooms", icon: Building2 },
-  { title: "Editor Master", url: "/masters/editors", icon: UserCircle },
+  { title: "Customer Master", url: "/masters/customers", icon: Users, module: "customers" },
+  { title: "Project Master", url: "/masters/projects", icon: Film, module: "projects" },
+  { title: "Room Master", url: "/masters/rooms", icon: Building2, module: "rooms" },
+  { title: "Editor Master", url: "/masters/editors", icon: UserCircle, module: "editors" },
 ];
 
 const reportsItems: MenuItem[] = [
-  { title: "Conflict Report", url: "/reports/conflict", icon: AlertTriangle },
-  { title: "Booking Report", url: "/reports/booking", icon: CalendarDays },
-  { title: "Editor Report", url: "/reports/editor", icon: UserCog },
-  { title: "Chalan Report", url: "/reports/chalan", icon: FileSpreadsheet, roles: ["admin"] },
+  { title: "Conflict Report", url: "/reports/conflict", icon: AlertTriangle, module: "reports" },
+  { title: "Booking Report", url: "/reports/booking", icon: CalendarDays, module: "reports" },
+  { title: "Editor Report", url: "/reports/editor", icon: UserCog, module: "reports" },
+  { title: "Chalan Report", url: "/reports/chalan", icon: FileSpreadsheet, roles: ["admin"], module: "reports" },
 ];
 
 const utilityItems: MenuItem[] = [
-  { title: "User Rights", url: "/utility/user-rights", icon: Shield },
-  { title: "User Management", url: "/utility/users", icon: Settings },
+  { title: "User Rights", url: "/utility/user-rights", icon: Shield, module: "user-rights" },
+  { title: "User Management", url: "/utility/users", icon: Settings, module: "users" },
 ];
 
 const menuSections: MenuSection[] = [
   { label: "Operations", items: operationsItems },
   { label: "Masters", items: mastersItems, roles: ["admin", "gst"] },
-  { label: "Reports", items: reportsItems },
+  { label: "Reports", items: reportsItems, roles: ["admin"], module: "reports" },
   { label: "Utility", items: utilityItems, roles: ["admin"] },
 ];
 
-function filterItemsByRole(items: MenuItem[], userRole: UserRole): MenuItem[] {
+function filterItemsByRoleAndPermissions(
+  items: MenuItem[], 
+  userRole: UserRole, 
+  canViewModule: (module: Module) => boolean
+): MenuItem[] {
   return items.filter(item => {
+    if (userRole === "custom") {
+      if (item.module) {
+        return canViewModule(item.module);
+      }
+      return false;
+    }
     if (!item.roles) return true;
     return item.roles.includes(userRole);
   });
 }
 
-function filterSectionsByRole(sections: MenuSection[], userRole: UserRole): MenuSection[] {
+function filterSectionsByRoleAndPermissions(
+  sections: MenuSection[], 
+  userRole: UserRole,
+  canViewModule: (module: Module) => boolean
+): MenuSection[] {
   return sections
     .filter(section => {
+      if (userRole === "custom") {
+        if (section.module) {
+          return canViewModule(section.module);
+        }
+        return true;
+      }
       if (!section.roles) return true;
       return section.roles.includes(userRole);
     })
     .map(section => ({
       ...section,
-      items: filterItemsByRole(section.items, userRole),
+      items: filterItemsByRoleAndPermissions(section.items, userRole, canViewModule),
     }))
     .filter(section => section.items.length > 0);
 }
@@ -181,12 +204,13 @@ function SidebarNavGroup({
 
 export function AppSidebar() {
   const { user, company, logout } = useAuth();
+  const { role, canView } = usePermissions();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(["Operations", "Masters", "Reports", "Utility"]));
 
-  const userRole = (user?.role as UserRole) || "non_gst";
-  const filteredSections = filterSectionsByRole(menuSections, userRole);
+  const userRole = (role as UserRole) || "non_gst";
+  const filteredSections = filterSectionsByRoleAndPermissions(menuSections, userRole, canView);
 
   const handleToggleSection = (section: string) => {
     setOpenSections(prev => {
@@ -200,14 +224,16 @@ export function AppSidebar() {
     });
   };
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
+  const getRoleBadge = (roleStr: string) => {
+    switch (roleStr) {
       case "admin":
         return <Badge variant="default" className="text-xs">Admin</Badge>;
       case "gst":
         return <Badge variant="secondary" className="text-xs">GST</Badge>;
       case "non_gst":
         return <Badge variant="outline" className="text-xs">Non-GST</Badge>;
+      case "custom":
+        return <Badge variant="outline" className="text-xs">Custom</Badge>;
       default:
         return null;
     }
