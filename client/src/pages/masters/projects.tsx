@@ -38,6 +38,7 @@ import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { usePermissions } from "@/lib/permissions";
 import type { Project, Customer } from "@shared/schema";
 
 const PROJECT_TYPES = [
@@ -61,6 +62,7 @@ type ProjectFormValues = z.infer<typeof projectFormSchema>;
 
 export default function ProjectsPage() {
   const { toast } = useToast();
+  const permissions = usePermissions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -288,10 +290,12 @@ export default function ProjectsPage() {
         ) : (
           <div className="space-y-4">
             <div className="flex justify-end">
-              <Button onClick={() => handleOpenDialog()} data-testid="button-add-project">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Project
-              </Button>
+              {permissions.canCreate("projects") && (
+                <Button onClick={() => handleOpenDialog()} data-testid="button-add-project">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Project
+                </Button>
+              )}
             </div>
 
             <DataTable
@@ -302,25 +306,29 @@ export default function ProjectsPage() {
               onRowClick={handleOpenDialog}
               actions={(row) => (
                 <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleOpenDialog(row)}
-                    data-testid={`button-edit-project-${row.id}`}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setDeletingProject(row);
-                      setDeleteDialogOpen(true);
-                    }}
-                    data-testid={`button-delete-project-${row.id}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {permissions.canEdit("projects") && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleOpenDialog(row)}
+                      data-testid={`button-edit-project-${row.id}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {permissions.canDelete("projects") && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setDeletingProject(row);
+                        setDeleteDialogOpen(true);
+                      }}
+                      data-testid={`button-delete-project-${row.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               )}
             />

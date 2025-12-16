@@ -37,6 +37,7 @@ import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { usePermissions } from "@/lib/permissions";
 import type { Room } from "@shared/schema";
 
 const ROOM_TYPES = [
@@ -61,6 +62,7 @@ type RoomFormValues = z.infer<typeof roomFormSchema>;
 
 export default function RoomsPage() {
   const { toast } = useToast();
+  const permissions = usePermissions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -268,10 +270,12 @@ export default function RoomsPage() {
         ) : (
           <div className="space-y-4">
             <div className="flex justify-end">
-              <Button onClick={() => handleOpenDialog()} data-testid="button-add-room">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Room
-              </Button>
+              {permissions.canCreate("rooms") && (
+                <Button onClick={() => handleOpenDialog()} data-testid="button-add-room">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Room
+                </Button>
+              )}
             </div>
 
             <DataTable
@@ -282,25 +286,29 @@ export default function RoomsPage() {
               onRowClick={handleOpenDialog}
               actions={(row) => (
                 <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleOpenDialog(row)}
-                    data-testid={`button-edit-room-${row.id}`}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setDeletingRoom(row);
-                      setDeleteDialogOpen(true);
-                    }}
-                    data-testid={`button-delete-room-${row.id}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {permissions.canEdit("rooms") && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleOpenDialog(row)}
+                      data-testid={`button-edit-room-${row.id}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {permissions.canDelete("rooms") && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setDeletingRoom(row);
+                        setDeleteDialogOpen(true);
+                      }}
+                      data-testid={`button-delete-room-${row.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               )}
             />

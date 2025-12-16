@@ -39,6 +39,7 @@ import { DataTable, Column } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { usePermissions } from "@/lib/permissions";
 import type { Editor } from "@shared/schema";
 
 const EDITOR_TYPES = [
@@ -64,6 +65,7 @@ type EditorFormValues = z.infer<typeof editorFormSchema>;
 
 export default function EditorsPage() {
   const { toast } = useToast();
+  const permissions = usePermissions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEditor, setEditingEditor] = useState<Editor | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -293,10 +295,12 @@ export default function EditorsPage() {
         ) : (
           <div className="space-y-4">
             <div className="flex justify-end">
-              <Button onClick={() => handleOpenDialog()} data-testid="button-add-editor">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Editor
-              </Button>
+              {permissions.canCreate("editors") && (
+                <Button onClick={() => handleOpenDialog()} data-testid="button-add-editor">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Editor
+                </Button>
+              )}
             </div>
 
             <DataTable
@@ -307,25 +311,29 @@ export default function EditorsPage() {
               onRowClick={handleOpenDialog}
               actions={(row) => (
                 <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleOpenDialog(row)}
-                    data-testid={`button-edit-editor-${row.id}`}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setDeletingEditor(row);
-                      setDeleteDialogOpen(true);
-                    }}
-                    data-testid={`button-delete-editor-${row.id}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {permissions.canEdit("editors") && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleOpenDialog(row)}
+                      data-testid={`button-edit-editor-${row.id}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {permissions.canDelete("editors") && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setDeletingEditor(row);
+                        setDeleteDialogOpen(true);
+                      }}
+                      data-testid={`button-delete-editor-${row.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               )}
             />

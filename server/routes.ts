@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { insertCustomerSchema, insertProjectSchema, insertRoomSchema, insertEditorSchema, insertBookingSchema, insertEditorLeaveSchema, insertChalanSchema, insertChalanItemSchema, insertUserSchema, loginSchema } from "@shared/schema";
 import { z } from "zod";
 
-type UserRole = "admin" | "gst" | "non_gst";
+type UserRole = "admin" | "gst" | "non_gst" | "custom";
 
 interface AuthenticatedRequest extends Request {
   userId?: number;
@@ -49,6 +49,120 @@ function requireRole(...allowedRoles: UserRole[]) {
     if (!allowedRoles.includes(req.userRole)) {
       return res.status(403).json({ message: "You don't have permission to perform this action" });
     }
+    next();
+  };
+}
+
+const moduleToSectionMap: Record<string, { module: string; section: string }[]> = {
+  booking: [{ module: "Operations", section: "Booking" }],
+  leaves: [{ module: "Operations", section: "Leaves Entry" }],
+  chalan: [
+    { module: "Operations", section: "Chalan Entry" },
+    { module: "Operations", section: "Chalan Revise" },
+  ],
+  customers: [{ module: "Masters", section: "Customer Master" }],
+  projects: [{ module: "Masters", section: "Project Master" }],
+  rooms: [{ module: "Masters", section: "Room Master" }],
+  editors: [{ module: "Masters", section: "Editor Master" }],
+  reports: [
+    { module: "Reports", section: "Conflict Report" },
+    { module: "Reports", section: "Booking Report" },
+    { module: "Reports", section: "Editor Report" },
+    { module: "Reports", section: "Chalan Report" },
+  ],
+  users: [{ module: "Utility", section: "User Management" }],
+  "user-rights": [{ module: "Utility", section: "User Rights" }],
+};
+
+const rolePermissions: Record<UserRole, Record<string, { canView: boolean; canCreate: boolean; canEdit: boolean; canDelete: boolean }>> = {
+  admin: {
+    booking: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    leaves: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    chalan: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    customers: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    projects: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    rooms: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    editors: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    reports: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    users: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    "user-rights": { canView: true, canCreate: true, canEdit: true, canDelete: true },
+  },
+  gst: {
+    booking: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    leaves: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    chalan: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    customers: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    projects: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    rooms: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    editors: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    reports: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+  },
+  non_gst: {
+    booking: { canView: true, canCreate: true, canEdit: false, canDelete: false },
+    leaves: { canView: true, canCreate: true, canEdit: false, canDelete: false },
+    chalan: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    customers: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    projects: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    rooms: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    editors: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    reports: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+  },
+  custom: {
+    booking: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    leaves: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    chalan: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    customers: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    projects: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    rooms: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    editors: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    reports: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+  },
+};
+
+async function getModulePermissions(userId: number, userRole: UserRole, moduleName: string) {
+  if (userRole !== "custom") {
+    return rolePermissions[userRole]?.[moduleName] || { canView: false, canCreate: false, canEdit: false, canDelete: false };
+  }
+  
+  const sections = moduleToSectionMap[moduleName] || [];
+  const userAccess = await storage.getUserAccess(userId);
+  
+  let canView = false;
+  let canCreate = false;
+  let canEdit = false;
+  let canDelete = false;
+
+  for (const { module, section } of sections) {
+    const access = userAccess.find(a => a.module === module && a.section === section);
+    if (access) {
+      if (access.canView) canView = true;
+      if (access.canCreate) canCreate = true;
+      if (access.canEdit) canEdit = true;
+      if (access.canDelete) canDelete = true;
+    }
+  }
+
+  return { canView, canCreate, canEdit, canDelete };
+}
+
+function requirePermission(moduleName: string, action: "canView" | "canCreate" | "canEdit" | "canDelete") {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.userId || !req.userRole) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    const permissions = await getModulePermissions(req.userId, req.userRole, moduleName);
+    
+    if (!permissions[action]) {
+      return res.status(403).json({ message: `You don't have ${action.replace('can', '').toLowerCase()} permission for this module` });
+    }
+    
     next();
   };
 }
@@ -328,7 +442,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/customers", async (req, res) => {
+  app.post("/api/customers", requirePermission("customers", "canCreate"), async (req, res) => {
     try {
       const { contacts, ...customerData } = req.body;
       const data = insertCustomerSchema.parse(customerData);
@@ -339,7 +453,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.patch("/api/customers/:id", async (req, res) => {
+  app.patch("/api/customers/:id", requirePermission("customers", "canEdit"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { contacts, ...customerData } = req.body;
@@ -353,7 +467,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.delete("/api/customers/:id", async (req, res) => {
+  app.delete("/api/customers/:id", requirePermission("customers", "canDelete"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteCustomer(id);
@@ -374,7 +488,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/projects", async (req, res) => {
+  app.post("/api/projects", requirePermission("projects", "canCreate"), async (req, res) => {
     try {
       const data = insertProjectSchema.parse(req.body);
       const project = await storage.createProject(data);
@@ -384,7 +498,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.patch("/api/projects/:id", async (req, res) => {
+  app.patch("/api/projects/:id", requirePermission("projects", "canEdit"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const project = await storage.updateProject(id, req.body);
@@ -397,7 +511,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.delete("/api/projects/:id", async (req, res) => {
+  app.delete("/api/projects/:id", requirePermission("projects", "canDelete"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteProject(id);
@@ -417,7 +531,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/rooms", async (req, res) => {
+  app.post("/api/rooms", requirePermission("rooms", "canCreate"), async (req, res) => {
     try {
       const data = insertRoomSchema.parse(req.body);
       const room = await storage.createRoom(data);
@@ -427,7 +541,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.patch("/api/rooms/:id", async (req, res) => {
+  app.patch("/api/rooms/:id", requirePermission("rooms", "canEdit"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const room = await storage.updateRoom(id, req.body);
@@ -440,7 +554,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.delete("/api/rooms/:id", async (req, res) => {
+  app.delete("/api/rooms/:id", requirePermission("rooms", "canDelete"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteRoom(id);
@@ -460,7 +574,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/editors", async (req, res) => {
+  app.post("/api/editors", requirePermission("editors", "canCreate"), async (req, res) => {
     try {
       const data = insertEditorSchema.parse(req.body);
       const editor = await storage.createEditor(data);
@@ -470,7 +584,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.patch("/api/editors/:id", async (req, res) => {
+  app.patch("/api/editors/:id", requirePermission("editors", "canEdit"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const editor = await storage.updateEditor(id, req.body);
@@ -483,7 +597,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.delete("/api/editors/:id", async (req, res) => {
+  app.delete("/api/editors/:id", requirePermission("editors", "canDelete"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteEditor(id);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Shield, Save, RotateCcw, User, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,7 +69,7 @@ export default function UserRightsPage() {
     enabled: !!selectedUserId,
   });
 
-  useState(() => {
+  useEffect(() => {
     if (userAccess.length > 0) {
       const matrix: AccessMatrix = {};
       userAccess.forEach((access) => {
@@ -82,8 +82,10 @@ export default function UserRightsPage() {
         };
       });
       setAccessMatrix(matrix);
+    } else if (selectedUserId) {
+      setAccessMatrix({});
     }
-  });
+  }, [userAccess, selectedUserId]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {

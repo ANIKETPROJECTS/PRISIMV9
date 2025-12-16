@@ -1,6 +1,8 @@
 import { useAuth } from "./auth-context";
+import { useQuery } from "@tanstack/react-query";
+import type { UserModuleAccess } from "@shared/schema";
 
-export type UserRole = "admin" | "gst" | "non_gst";
+export type UserRole = "admin" | "gst" | "non_gst" | "custom";
 
 export type Module = 
   | "booking" 
@@ -58,14 +60,78 @@ const rolePermissions: Record<UserRole, Record<Module, ModulePermissions>> = {
     users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
     "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
   },
+  custom: {
+    booking: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    leaves: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    chalan: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    customers: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    projects: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    rooms: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    editors: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    reports: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    users: { canView: false, canCreate: false, canEdit: false, canDelete: false },
+    "user-rights": { canView: false, canCreate: false, canEdit: false, canDelete: false },
+  },
+};
+
+const moduleToSectionMap: Record<string, { module: string; section: string }[]> = {
+  booking: [{ module: "Operations", section: "Booking" }],
+  leaves: [{ module: "Operations", section: "Leaves Entry" }],
+  chalan: [
+    { module: "Operations", section: "Chalan Entry" },
+    { module: "Operations", section: "Chalan Revise" },
+  ],
+  customers: [{ module: "Masters", section: "Customer Master" }],
+  projects: [{ module: "Masters", section: "Project Master" }],
+  rooms: [{ module: "Masters", section: "Room Master" }],
+  editors: [{ module: "Masters", section: "Editor Master" }],
+  reports: [
+    { module: "Reports", section: "Conflict Report" },
+    { module: "Reports", section: "Booking Report" },
+    { module: "Reports", section: "Editor Report" },
+    { module: "Reports", section: "Chalan Report" },
+  ],
+  users: [{ module: "Utility", section: "User Management" }],
+  "user-rights": [{ module: "Utility", section: "User Rights" }],
 };
 
 export function usePermissions() {
   const { user } = useAuth();
   const role = (user?.role as UserRole) || "non_gst";
   const isAdmin = role === "admin";
+  const isCustomRole = role === "custom";
+
+  const { data: customAccess = [] } = useQuery<UserModuleAccess[]>({
+    queryKey: ["/api/users", user?.id, "access"],
+    enabled: isCustomRole && !!user?.id,
+  });
+
+  function getCustomPermissions(module: Module): ModulePermissions {
+    const sections = moduleToSectionMap[module] || [];
+    let canView = false;
+    let canCreate = false;
+    let canEdit = false;
+    let canDelete = false;
+
+    for (const { module: modName, section } of sections) {
+      const access = customAccess.find(
+        (a) => a.module === modName && a.section === section
+      );
+      if (access) {
+        if (access.canView) canView = true;
+        if (access.canCreate) canCreate = true;
+        if (access.canEdit) canEdit = true;
+        if (access.canDelete) canDelete = true;
+      }
+    }
+
+    return { canView, canCreate, canEdit, canDelete };
+  }
 
   function getModulePermissions(module: Module): ModulePermissions {
+    if (isCustomRole) {
+      return getCustomPermissions(module);
+    }
     return rolePermissions[role][module] || {
       canView: false,
       canCreate: false,
@@ -93,6 +159,7 @@ export function usePermissions() {
   return {
     role,
     isAdmin,
+    isCustomRole,
     getModulePermissions,
     canView,
     canCreate,
