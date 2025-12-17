@@ -1,0 +1,338 @@
+✅ Professional Replit Prompt – User Management, RBAC, Chalan Logic & UI Fixes
+🔹 Project Context
+
+I have an existing production project with:
+
+User Management
+
+Role-based permissions (Admin, Custom users)
+
+Reports (Conflict, Booking, Editor, Chalan)
+
+Chalan Entry, Chalan Revision, Invoice
+
+Booking with time-based billing
+
+MySQL database
+
+Live deployed structure
+
+⚠️ Do NOT change:
+
+Database schema unnecessarily
+
+Existing workflow
+
+API routes
+
+UI structure or layout
+
+Folder structure
+
+Only fix logic, permissions, UI behavior, and bugs.
+
+1️⃣ Admin-Only: Add Company in User Management
+Requirement
+
+Only Admin can:
+
+See “Add Company” button
+
+Create a new company
+
+Rules
+
+Hide “Add Company” button for all non-admin users
+
+Backend must also block non-admin requests (403 Forbidden)
+
+Admin flow:
+
+Click Add Company
+
+Open modal/form
+
+Fields:
+
+Company Name
+
+Admin Username
+
+Security PIN
+
+Create company successfully
+
+2️⃣ Remove Password Field – Use Security PIN Only
+Requirement
+
+Remove Password field completely from:
+
+Add User form
+
+Edit User form
+
+View User (eye icon)
+
+Rules
+
+Authentication uses Security PIN only
+
+UI must NOT show password anywhere
+
+Backend must NOT expect password for user create/update
+
+Login must continue working with PIN (already implemented)
+
+3️⃣ STRICT Report Permissions (Critical Fix)
+Current Bug
+
+If a user has permission for only Conflict Report (View):
+
+They still see:
+
+Booking Report
+
+Editor Report
+
+Chalan Report
+
+With full permissions ❌
+
+Expected Behavior
+
+Only show report sections explicitly permitted
+
+Permissions apply per report:
+
+View
+
+Create
+
+Edit
+
+Delete
+
+Example
+
+If user has:
+
+Conflict Report → View only
+
+Then:
+
+Sidebar shows ONLY Conflict Report
+
+Only View access enabled
+
+No other reports visible
+
+Apply same strict logic to:
+
+Booking Report
+
+Editor Report
+
+Chalan Report
+
+Frontend + Backend enforcement required.
+
+4️⃣ Utility Section – Admin Only
+
+Utility menu:
+
+Visible ONLY to Admin
+
+Non-admin:
+
+Menu hidden
+
+Route access blocked (403)
+
+5️⃣ Fix Chalan Revision Logic (Correct Business Meaning)
+Definition
+
+“Chalan Revised” means:
+
+Editing / correcting an already created chalan
+
+Not deleting or replacing it blindly
+
+Required Behavior
+
+On revise:
+
+Copy original chalan data
+
+Allow modification of:
+
+Editor
+
+Room
+
+Time
+
+Amount
+
+Date
+
+Mark original chalan as:
+
+Revised
+
+Create a new revised chalan entry
+
+Keep audit trail intact
+
+6️⃣ Chalan Price Calculation Based on Actual Time
+Requirement
+
+Calculate price using:
+
+Actual From Time → To Time
+
+NOT estimated or fixed hours
+
+Logic
+Actual Duration = To Time – From Time
+Price = Actual Duration × Rate
+
+
+Store actual time
+
+Display actual time everywhere
+
+7️⃣ Show Actual Time Everywhere Booking Appears
+
+In all modules where booking time is shown:
+
+Booking Calendar
+
+Booking List
+
+Reports
+
+Chalan
+
+Invoice
+
+Display:
+
+Scheduled Time (if exists)
+
+Actual Time (From → To) clearly with proper UI labels
+
+8️⃣ Remove Print Button from Editor Report
+
+Remove Print button/functionality completely from:
+
+Editor Report UI
+
+Do not affect other reports
+
+9️⃣ Handle Large Amount UI Properly
+Requirement
+
+Large amounts must:
+
+Fit inside column
+
+Not overflow or break layout
+
+UI Behavior
+
+Truncate visually if needed
+
+On hover:
+
+Show full amount tooltip
+
+Do NOT expand row or break table
+
+🔟 Chalan Report & Invoice – Display Actual Time
+
+In Chalan:
+
+Report
+
+Invoice
+
+Print view
+
+Display:
+
+Actual From Time
+
+Actual To Time
+
+Consistent formatting across UI & PDF/print
+
+1️⃣1️⃣ Project Cleanup & Deployment Readiness
+Required Cleanup
+
+Delete:
+
+Unused asset images
+
+Saved prompt files (development artifacts)
+
+Keep:
+
+Existing APIs
+
+Existing logic
+
+Existing structure
+
+Final Code Must Be:
+
+Clean
+
+Production-ready
+
+Server-deployable
+
+No broken references
+
+No workflow changes
+
+🧠 Security & Enforcement Rules
+
+Backend permission validation on every API
+
+Frontend hides UI elements but backend is final authority
+
+Admin is the only super-user
+
+Non-admin access strictly limited
+
+🧪 Acceptance Criteria (Must Pass)
+
+Non-admin cannot see Utility section
+
+Reports show ONLY allowed report types
+
+Chalan revision creates proper revised entry
+
+Actual time used everywhere
+
+Large amounts display cleanly
+
+No password fields anywhere
+
+Code runs without errors
+
+Existing functionality unaffected
+
+🎯 Final Outcome
+
+Enterprise-grade RBAC
+
+Correct chalan business logic
+
+Accurate billing
+
+Clean UI
+
+Secure user management
+
+Production-ready code
