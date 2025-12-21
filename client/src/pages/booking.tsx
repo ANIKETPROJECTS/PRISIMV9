@@ -219,7 +219,7 @@ function BookingContent() {
       const data = await response.json();
       
       if (response.ok && data.chalan) {
-        navigate(`/chalan/revise?id=${data.chalan.id}`);
+        navigate(`/chalan`);
       } else {
         toast({
           title: "Chalan not found",
