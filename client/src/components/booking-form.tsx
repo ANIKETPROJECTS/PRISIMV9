@@ -537,9 +537,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                     <FormLabel>Break Hrs</FormLabel>
                     <FormControl>
                       <Input 
-                        type="number" 
-                        min="0" 
-                        step="any"
+                        type="text" 
                         data-testid="input-break-hours"
                         disabled={readOnly}
                         {...field} 
