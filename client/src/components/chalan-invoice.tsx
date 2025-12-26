@@ -114,6 +114,8 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                   <thead>
                     <tr className="bg-muted/50 border-b border-foreground/20">
                       <th className="px-3 py-2 text-left font-semibold">Customer</th>
+                      <th className="px-3 py-2 text-left font-semibold">Editor</th>
+                      <th className="px-3 py-2 text-left font-semibold">Room</th>
                       <th className="px-3 py-2 text-left font-semibold">Booking Time (From-To)</th>
                       <th className="px-3 py-2 text-left font-semibold">Actual Time (From-To)</th>
                       <th className="px-3 py-2 text-left font-semibold">Break Hours</th>
@@ -123,6 +125,8 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                   <tbody>
                     <tr className="border-b border-foreground/20 hover:bg-muted/30">
                       <td className="px-3 py-2">{chalan.customer?.name || "—"}</td>
+                      <td className="px-3 py-2">{chalan.booking?.editor?.name || "—"}</td>
+                      <td className="px-3 py-2">{chalan.booking?.room?.name || "—"}</td>
                       <td className="px-3 py-2 font-mono">
                         {chalan.fromTime && chalan.toTime 
                           ? `${chalan.fromTime.slice(0, 5)} - ${chalan.toTime.slice(0, 5)}`
@@ -164,7 +168,7 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
               </div>
               <div>
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Editor (Technician)</p>
-                <p className="text-sm font-medium">{chalan.booking?.editor?.name || chalan.editor?.name || "—"}</p>
+                <p className="text-sm font-medium">{chalan.booking?.editor?.name || "—"}</p>
               </div>
               <div>
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Status</p>

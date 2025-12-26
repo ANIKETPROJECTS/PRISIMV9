@@ -412,7 +412,7 @@ export type ChalanWithItems = Chalan & {
   revisions?: ChalanRevision[];
   editor?: Editor;
   room?: Room;
-  booking?: Booking;
+  booking?: BookingWithRelations;
   originalChalan?: Chalan;
 };
 
