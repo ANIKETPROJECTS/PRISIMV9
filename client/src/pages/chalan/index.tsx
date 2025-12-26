@@ -495,9 +495,7 @@ export default function ChalanPage() {
           <EmptyState
             icon={FileText}
             title="No chalans yet"
-            description={canEditChalans ? "Create your first chalan to start billing." : "No chalans have been created yet."}
-            actionLabel={canEditChalans ? "Create Chalan" : undefined}
-            onAction={canEditChalans ? handleOpenDialog : undefined}
+            description="Chalans are created from bookings. Create a booking first to generate a chalan."
           />
         ) : (
           <div className="space-y-4">
@@ -510,12 +508,6 @@ export default function ChalanPage() {
                 <ClipboardList className="h-4 w-4 mr-2" />
                 Revise Chalan
               </Button>
-              {canEditChalans && (
-                <Button onClick={handleOpenDialog} data-testid="button-create-chalan">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Chalan
-                </Button>
-              )}
             </div>
 
             <DataTable

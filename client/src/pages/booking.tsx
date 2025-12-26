@@ -186,6 +186,13 @@ function BookingContent() {
   const handleEditBooking = (booking: BookingWithRelations) => {
     if (booking.status === "cancelled") {
       setViewingCancelledBooking(booking);
+    } else if (hasChalan(booking.id!)) {
+      const { toast } = useToast();
+      toast({
+        title: "Cannot Edit Booking",
+        description: "This booking cannot be edited because a chalan has been created. Please delete the chalan first if you need to edit the booking.",
+        variant: "destructive",
+      });
     } else {
       setEditingBooking(booking);
       setBookingFormOpen(true);
@@ -502,6 +509,7 @@ function BookingContent() {
         }}
         booking={editingBooking}
         defaultDate={selectedDate}
+        hasChalan={editingBooking ? hasChalan(editingBooking.id!) : false}
       />
 
       <BookingForm

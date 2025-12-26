@@ -108,27 +108,33 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                   <tr className="bg-muted">
                     <th className="text-left p-2 border border-foreground/20 font-semibold">S.No</th>
                     <th className="text-left p-2 border border-foreground/20 font-semibold">Description</th>
-                    <th className="text-center p-2 border border-foreground/20 font-semibold w-16">Qty</th>
-                    <th className="text-right p-2 border border-foreground/20 font-semibold w-24">Rate</th>
-                    <th className="text-right p-2 border border-foreground/20 font-semibold w-24">Amount</th>
+                    <th className="text-center p-2 border border-foreground/20 font-semibold w-32">Booking From → To Time</th>
+                    <th className="text-center p-2 border border-foreground/20 font-semibold w-32">Actual From → To Time</th>
+                    <th className="text-center p-2 border border-foreground/20 font-semibold w-20">Break Hours</th>
+                    <th className="text-center p-2 border border-foreground/20 font-semibold w-20">Total Hours</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {chalan.items?.map((item, index) => (
+                  {chalan.booking ? (
+                    <tr className="hover:bg-muted/50">
+                      <td className="p-2 border border-foreground/20 text-center font-mono">1</td>
+                      <td className="p-2 border border-foreground/20">{chalan.booking?.project?.name || "Project"}</td>
+                      <td className="p-2 border border-foreground/20 text-center font-mono">
+                        {chalan.booking?.fromTime?.slice(0, 5)} → {chalan.booking?.toTime?.slice(0, 5)}
+                      </td>
+                      <td className="p-2 border border-foreground/20 text-center font-mono">
+                        {chalan.booking?.actualFromTime?.slice(0, 5) || '—'} → {chalan.booking?.actualToTime?.slice(0, 5) || '—'}
+                      </td>
+                      <td className="p-2 border border-foreground/20 text-center font-mono">{chalan.booking?.breakHours || 0}</td>
+                      <td className="p-2 border border-foreground/20 text-center font-mono">{chalan.booking?.totalHours || 0}</td>
+                    </tr>
+                  ) : chalan.items?.map((item, index) => (
                     <tr key={index} className="hover:bg-muted/50">
                       <td className="p-2 border border-foreground/20 text-center font-mono">{index + 1}</td>
                       <td className="p-2 border border-foreground/20">{item.description}</td>
-                      <td className="p-2 border border-foreground/20 text-center font-mono">{item.quantity}</td>
-                      <td className="p-2 border border-foreground/20 text-right font-mono">{(item.rate || 0).toLocaleString()}</td>
-                      <td className="p-2 border border-foreground/20 text-right font-mono">{(item.amount || 0).toLocaleString()}</td>
+                      <td colSpan={4} className="p-2 border border-foreground/20 text-center text-muted-foreground">Item details</td>
                     </tr>
                   ))}
-                  <tr className="bg-muted font-bold">
-                    <td colSpan={4} className="p-2 border border-foreground/20 text-right text-sm">Grand Total</td>
-                    <td className="p-2 border border-foreground/20 text-right font-mono text-sm">
-                      Rs. {(chalan.totalAmount || 0).toLocaleString()}
-                    </td>
-                  </tr>
                 </tbody>
               </table>
             </div>
@@ -146,6 +152,23 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                 <p className="text-xs">{chalan.cancelReason}</p>
               </div>
             )}
+
+            <Separator className="my-4" />
+
+            <div className="grid grid-cols-3 gap-4 pt-4 mb-4">
+              <div>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Customer (Client)</p>
+                <p className="text-sm font-medium">{chalan.customer?.name || "—"}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Editor (Technician)</p>
+                <p className="text-sm font-medium">{chalan.booking?.editor?.name || chalan.editor?.name || "—"}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Status</p>
+                <p className="text-sm font-medium">{chalan.isCancelled ? "Cancelled" : chalan.isRevised ? "Revised" : "Active"}</p>
+              </div>
+            </div>
 
             <Separator className="my-4" />
 

@@ -61,6 +61,7 @@ interface BookingFormProps {
   booking?: Booking | null;
   defaultDate?: Date;
   readOnly?: boolean;
+  hasChalan?: boolean;
 }
 
 interface ConflictResult {
@@ -70,10 +71,13 @@ interface ConflictResult {
   leaveInfo?: any;
 }
 
-export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly = false }: BookingFormProps) {
+export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly = false, hasChalan = false }: BookingFormProps) {
   const { toast } = useToast();
   const [conflictResult, setConflictResult] = useState<ConflictResult | null>(null);
   const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
+  
+  // Lock booking if chalan exists
+  const isLocked = hasChalan && booking?.id;
 
   const { data: rooms = [] } = useQuery<Room[]>({
     queryKey: ["/api/rooms"],

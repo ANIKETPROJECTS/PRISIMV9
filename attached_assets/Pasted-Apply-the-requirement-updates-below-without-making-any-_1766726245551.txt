@@ -1,0 +1,137 @@
+Apply the requirement updates below without making any major changes to:
+
+Database schema, table structure, column types, or relationships
+
+Existing project flow, file structure, UI design, layout, or styling
+
+Current functionality, business logic, or MySQL database configuration
+
+Any core booking or chalan linking mechanism already implemented
+
+All enhancements must be added within the current system, extending logic only at the service, validation, or report rendering layer.
+
+Required Updates
+
+Show Break Hours Under Actual Time
+
+In all reports, invoice/chalan views, and PDF print/download screens
+
+Display actual time first, and break hours directly below it
+
+Do not modify how times are stored in DB
+
+Booking-Only Chalan Creation
+
+Chalan must be generated only from a booking
+
+Completely block or disable manual chalan creation from chalan entry
+
+Keep UI unchanged, only enforce restriction in logic
+
+Booking Lock When Chalan Exists
+
+Once a chalan is created, disable editing for that booking
+
+If the linked chalan is deleted, booking becomes editable again
+
+Add validation without altering DB or flow
+
+Enable Column Filters in All Reports (Exclude Status)
+
+Add filter option for every column in Booking report and all reports
+
+Do NOT add filter on Status column
+
+UI must remain the same, only add filter controls where appropriate
+
+Auto-Fetch Customer & Editor Name in Chalan Footer
+
+When viewing/printing/downloading chalan, auto-display:
+
+Customer (Client) Name
+
+Editor (Technician) Name
+
+Must be fetched from existing booking data without DB changes
+
+Completely Hide Code/Section for Item Details
+
+Hide/remove the following from:
+
+Chalan entry
+
+Chalan revise
+
+Chalan report
+
+Invoice/Chalan view & PDF
+
+Fields to hide:
+
+description items
+
+rate, quantity, amount
+
+grand total, calculations
+
+Do not affect booking module
+
+Invoice/Chalan Columns Must Only Show
+
+S.No
+Description
+Booking From → To Time
+Actual From → To Time
+Break Hours
+Total Hours
+
+
+Completely remove/hide:
+
+Qty, Rate, Amount, Grand Total, Grand Total row
+
+Time Must Be Counted Exactly, No Rounding
+
+Do not round off hours or minutes
+
+Use exact time values as stored/displayed
+
+Break Hrs Must Support Minutes Input
+
+Break hours may include minutes (already entered in booking)
+
+Calculate all totals precisely
+
+No rounding or approximate time calculation
+
+General Rules
+
+Do not change existing UI/UX, only remove/hide fields where specified
+
+Maintain existing database, queries, and booking → chalan link flow
+
+Ensure PDF/Print/Download features continue working normally
+
+Add logic safely in validation & report generation layers
+
+Test for:
+
+bookings with and without break hours
+
+locked/unlocked edit states based on chalan existence
+
+filter working for all columns except status
+
+exact time calculations including minutes
+
+Expected Deliverables
+
+Fully working code integrated into the current system
+
+No disruption to booking, dashboard, or database
+
+Required fields added/hidden exactly as instructed
+
+Chalan restriction and booking lock/unlock working properly
+
+Accurate time + break hours calculation without rounding
