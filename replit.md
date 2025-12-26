@@ -224,3 +224,10 @@ npx tsx server/seed-demo.ts
   - Editors: Checks for booking and leave references
   - Users: Direct deletion with user module access cleanup
 - **Transaction Support**: Company creation, booking deletion, and chalan deletion wrapped in database transactions for atomicity
+
+### December 26, 2025 Updates - Chalan Booking Details Display
+- **Booking Details Table**: Added horizontal table in chalan/invoice showing customer, booking time (from-to), actual time (from-to), break hours, and total hours
+- **Schema Enhancement**: Added `breakHours` and `totalHours` fields to chalans table for detailed time tracking
+- **Auto-Populate Time Fields**: Chalan form now automatically populates booking time data when an editor is selected from a booking
+- **Invoice Display**: Time details display in the chalan invoice with formatted scheduling and actual work times
+- **Frontend Form**: Added time-related fields to chalan form (fromTime, toTime, actualFromTime, actualToTime, breakHours, totalHours) with auto-fill from booking selection
