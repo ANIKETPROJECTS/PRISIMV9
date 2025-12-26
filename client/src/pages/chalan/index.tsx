@@ -165,6 +165,31 @@ export default function ChalanPage() {
     queryKey: ["/api/editors"],
   });
 
+  const actualFromTime = form.watch("actualFromTime");
+  const actualToTime = form.watch("actualToTime");
+  const breakHours = form.watch("breakHours");
+
+  useEffect(() => {
+    if (actualFromTime && actualToTime) {
+      const timeToMinutes = (time: string): number => {
+        const [hours, minutes] = time.split(":").map(Number);
+        return hours * 60 + (minutes || 0);
+      };
+
+      const fromMinutes = timeToMinutes(actualFromTime);
+      const toMinutes = timeToMinutes(actualToTime);
+      const breakMinutes = breakHours ? parseFloat(breakHours) * 60 : 0;
+
+      let diffMinutes = toMinutes - fromMinutes;
+      if (diffMinutes < 0) diffMinutes += 24 * 60;
+
+      const totalMinutes = diffMinutes - breakMinutes;
+      const totalHours = (totalMinutes / 60).toFixed(2);
+
+      form.setValue("totalHours", totalHours);
+    }
+  }, [actualFromTime, actualToTime, breakHours, form]);
+
   useEffect(() => {
     if (urlParamsProcessed) return;
     
@@ -764,20 +789,6 @@ export default function ChalanPage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notes</FormLabel>
-                    <FormControl>
-                      <Textarea data-testid="input-notes" {...field} disabled={true} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -952,6 +963,20 @@ export default function ChalanPage() {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes</FormLabel>
+                    <FormControl>
+                      <Textarea data-testid="input-notes" {...field} disabled={true} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <DialogFooter className="gap-2">
                 <Button
