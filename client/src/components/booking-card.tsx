@@ -66,7 +66,7 @@ export function BookingCard({
       <TooltipTrigger asChild>
         <div
           className={cn(
-            "relative rounded-md border-l-4 p-2 text-left hover-elevate cursor-pointer h-[72px]",
+            "relative rounded-md border-l-4 p-3 text-left hover-elevate cursor-pointer h-[90px]",
             statusColors[booking.status as keyof typeof statusColors]
           )}
           onClick={() => onEdit?.(booking)}
@@ -86,16 +86,16 @@ export function BookingCard({
               </div>
             </>
           )}
-          <div className="flex items-start justify-between gap-1">
+          <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0 overflow-hidden">
               <p 
-                className={cn("text-sm font-medium truncate", !isEditable && "line-through text-muted-foreground")}
+                className={cn("text-base font-semibold truncate", !isEditable && "line-through text-muted-foreground")}
                 title={customerName}
               >
                 {truncateName(customerName, 12)}
               </p>
               <p 
-                className="text-xs font-normal text-muted-foreground truncate mt-0.5"
+                className="text-sm font-normal text-muted-foreground truncate mt-1"
                 title={projectName}
               >
                 {truncateName(projectName, 12)}
