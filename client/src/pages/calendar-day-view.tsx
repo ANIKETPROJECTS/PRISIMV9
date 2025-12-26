@@ -17,6 +17,8 @@ import {
   XCircle,
   Eye,
   History,
+  Grid3X3,
+  List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +72,7 @@ export default function CalendarDayView() {
   const [cancelReason, setCancelReason] = useState("");
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
   const [viewingBooking, setViewingBooking] = useState<BookingWithRelations | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const dateStr = format(currentDate, "yyyy-MM-dd");
 
@@ -148,6 +151,18 @@ export default function CalendarDayView() {
   const cancelledBookings = useMemo(() => {
     return bookings.filter((b) => b.status === "cancelled");
   }, [bookings]);
+
+  const bookingsByRoom = useMemo(() => {
+    const map = new Map<string, BookingWithRelations[]>();
+    sortedBookings.forEach((booking) => {
+      const roomKey = booking.room?.name || "Unassigned Room";
+      if (!map.has(roomKey)) {
+        map.set(roomKey, []);
+      }
+      map.get(roomKey)!.push(booking);
+    });
+    return map;
+  }, [sortedBookings]);
 
   const handlePrevDay = () => setCurrentDate(subDays(currentDate, 1));
   const handleNextDay = () => setCurrentDate(addDays(currentDate, 1));
@@ -271,10 +286,33 @@ export default function CalendarDayView() {
             </Button>
           </div>
 
-          <Button onClick={handleNewBooking} data-testid="button-new-booking">
-            <Plus className="h-4 w-4 mr-2" />
-            New Booking
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="flex border rounded-md bg-muted/50" data-testid="view-mode-toggle">
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="icon"
+                onClick={() => setViewMode("list")}
+                data-testid="button-list-view"
+                className="rounded-r-none"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <div className="w-px bg-border" />
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="icon"
+                onClick={() => setViewMode("grid")}
+                data-testid="button-grid-view"
+                className="rounded-l-none"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+            </div>
+            <Button onClick={handleNewBooking} data-testid="button-new-booking">
+              <Plus className="h-4 w-4 mr-2" />
+              New Booking
+            </Button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-hidden">
@@ -293,7 +331,141 @@ export default function CalendarDayView() {
                 actionLabel="Create Booking"
                 onAction={handleNewBooking}
               />
+            ) : viewMode === "grid" ? (
+              // GRID VIEW
+              <div className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-max">
+                  {Array.from(bookingsByRoom.entries()).map(([roomName, roomBookings]) => (
+                    <div key={roomName} className="border rounded-lg overflow-hidden bg-card">
+                      <div className="bg-muted p-3 border-b sticky top-0 z-10">
+                        <h3 className="font-semibold text-sm flex items-center gap-2">
+                          <Building className="h-4 w-4" />
+                          {roomName}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {roomBookings.length} booking{roomBookings.length !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <div className="space-y-2 p-3">
+                        {roomBookings.map((booking) => (
+                          <div
+                            key={booking.id}
+                            className={cn(
+                              "p-3 rounded-md border-l-4 bg-muted/30 cursor-pointer hover-elevate transition-colors",
+                              statusColors[booking.status as keyof typeof statusColors]
+                            )}
+                            onClick={() => handleEditBooking(booking)}
+                            data-testid={`grid-booking-${booking.id}`}
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <Badge
+                                className={cn(
+                                  "text-xs",
+                                  statusBadgeColors[booking.status as keyof typeof statusBadgeColors]
+                                )}
+                              >
+                                {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                              </Badge>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                                    <MoreVertical className="h-3 w-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewLogs(booking);
+                                  }}>
+                                    <History className="h-4 w-4 mr-2" />
+                                    View Logs
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  {hasChalan(booking.id) ? (
+                                    <DropdownMenuItem onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleViewChalan(booking);
+                                    }}>
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      View Chalan
+                                    </DropdownMenuItem>
+                                  ) : (
+                                    <DropdownMenuItem onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCreateChalan(booking);
+                                    }}>
+                                      <FileText className="h-4 w-4 mr-2" />
+                                      Create Chalan
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem 
+                                    className="text-destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCancelBooking(booking);
+                                    }}
+                                  >
+                                    <XCircle className="h-4 w-4 mr-2" />
+                                    Cancel
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                            <p className="font-medium text-sm line-clamp-1">
+                              {booking.customer?.name || "Unknown"}
+                            </p>
+                            <p className="text-xs text-muted-foreground font-mono">
+                              {booking.fromTime?.slice(0, 5)} - {booking.toTime?.slice(0, 5)}
+                            </p>
+                            {booking.project && (
+                              <p className="text-xs text-muted-foreground line-clamp-1">
+                                {booking.project.name}
+                              </p>
+                            )}
+                            {booking.editor && (
+                              <p className="text-xs text-muted-foreground line-clamp-1">
+                                {booking.editor.name}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {cancelledBookings.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                      Cancelled Bookings ({cancelledBookings.length})
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {cancelledBookings.map((booking) => (
+                        <div
+                          key={booking.id}
+                          className="p-3 rounded-md border-l-4 border-l-booking-cancelled bg-muted/30 opacity-60"
+                          data-testid={`grid-cancelled-${booking.id}`}
+                        >
+                          <Badge variant="secondary" className="text-xs">Cancelled</Badge>
+                          <p className="font-medium text-sm line-clamp-1 mt-2 line-through">
+                            {booking.customer?.name || "Unknown"}
+                          </p>
+                          <p className="text-xs text-muted-foreground font-mono line-through">
+                            {booking.fromTime?.slice(0, 5)} - {booking.toTime?.slice(0, 5)}
+                          </p>
+                          {booking.cancelReason && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {booking.cancelReason}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
+              // LIST VIEW
               <div className="space-y-6">
                 {sortedBookings.length > 0 && (
                   <div className="space-y-3">
