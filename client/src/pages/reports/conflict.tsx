@@ -26,6 +26,7 @@ import type { BookingWithRelations, Room, Editor } from "@shared/schema";
 
 function ConflictReportContent() {
   const { toast } = useToast();
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
   const [toDate, setToDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
   const [selectedRoom, setSelectedRoom] = useState<string>("all");
@@ -212,7 +213,43 @@ function ConflictReportContent() {
               />
             ) : (
               <div className="space-y-4">
-                {conflicts.map((conflict, index) => (
+                <Card className="p-4 mb-4 bg-muted/30">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Input
+                      placeholder="Filter Date..."
+                      value={columnFilters.date || ""}
+                      onChange={(e) => setColumnFilters(prev => ({ ...prev, date: e.target.value }))}
+                      className="h-8 text-sm"
+                    />
+                    <Input
+                      placeholder="Filter Room..."
+                      value={columnFilters.room || ""}
+                      onChange={(e) => setColumnFilters(prev => ({ ...prev, room: e.target.value }))}
+                      className="h-8 text-sm"
+                    />
+                    <Input
+                      placeholder="Filter Customer..."
+                      value={columnFilters.customer || ""}
+                      onChange={(e) => setColumnFilters(prev => ({ ...prev, customer: e.target.value }))}
+                      className="h-8 text-sm"
+                    />
+                    <Input
+                      placeholder="Filter Project..."
+                      value={columnFilters.project || ""}
+                      onChange={(e) => setColumnFilters(prev => ({ ...prev, project: e.target.value }))}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </Card>
+                {conflicts
+                  .filter(c => {
+                    const dateMatch = !columnFilters.date || format(new Date(c.booking1.bookingDate), "PPP").toLowerCase().includes(columnFilters.date.toLowerCase());
+                    const roomMatch = !columnFilters.room || (c.booking1.room?.name || "").toLowerCase().includes(columnFilters.room.toLowerCase());
+                    const customerMatch = !columnFilters.customer || (c.booking1.customer?.name || "").toLowerCase().includes(columnFilters.customer.toLowerCase()) || (c.booking2.customer?.name || "").toLowerCase().includes(columnFilters.customer.toLowerCase());
+                    const projectMatch = !columnFilters.project || (c.booking1.project?.name || "").toLowerCase().includes(columnFilters.project.toLowerCase()) || (c.booking2.project?.name || "").toLowerCase().includes(columnFilters.project.toLowerCase());
+                    return dateMatch && roomMatch && customerMatch && projectMatch;
+                  })
+                  .map((conflict, index) => (
                   <Card key={index} className="border-l-4 border-l-destructive">
                     <CardContent className="pt-4">
                       <div className="flex items-start justify-between mb-4">

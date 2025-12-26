@@ -40,6 +40,7 @@ interface DataTableProps<T> {
   exportable?: boolean;
   onExport?: () => void;
   pageSize?: number;
+  enableColumnFilters?: boolean;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -52,8 +53,10 @@ export function DataTable<T extends Record<string, any>>({
   exportable = false,
   onExport,
   pageSize = 5,
+  enableColumnFilters = false,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -97,11 +100,21 @@ export function DataTable<T extends Record<string, any>>({
     return String(value);
   };
 
-  const filteredData = data.filter((row) =>
-    Object.values(row).some((value) =>
+  const filteredData = data.filter((row) => {
+    // Global search
+    const matchesGlobal = Object.values(row).some((value) =>
       getSearchableValue(value).toLowerCase().includes(search.toLowerCase())
-    )
-  );
+    );
+
+    if (!matchesGlobal) return false;
+
+    // Column filters
+    return Object.entries(columnFilters).every(([key, filterValue]) => {
+      if (!filterValue) return true;
+      const rowValue = row[key];
+      return getSearchableValue(rowValue).toLowerCase().includes(filterValue.toLowerCase());
+    });
+  });
 
   const sortedData = useMemo(() => {
     if (!sortColumn || !sortDirection) return filteredData;
@@ -212,22 +225,41 @@ export function DataTable<T extends Record<string, any>>({
                   )}
                   onClick={() => column.sortable && handleSort(column.key)}
                 >
-                  <div className="flex items-center gap-1">
-                    {column.header}
-                    {column.sortable && (
-                      <span className="inline-flex">
-                        {sortColumn === column.key ? (
-                          <ArrowUp 
-                            className={cn(
-                              "h-4 w-4 text-primary transition-transform duration-200",
-                              sortDirection === "desc" && "rotate-180"
-                            )} 
-                            data-testid={`sort-${sortDirection}-${column.key}`} 
-                          />
-                        ) : (
-                          <ArrowUp className="h-4 w-4 text-muted-foreground opacity-40" data-testid={`sort-none-${column.key}`} />
-                        )}
-                      </span>
+                  <div className="flex flex-col gap-2 py-2">
+                    <div className="flex items-center gap-1">
+                      {column.header}
+                      {column.sortable && (
+                        <span className="inline-flex">
+                          {sortColumn === column.key ? (
+                            <ArrowUp 
+                              className={cn(
+                                "h-4 w-4 text-primary transition-transform duration-200",
+                                sortDirection === "desc" && "rotate-180"
+                              )} 
+                              data-testid={`sort-${sortDirection}-${column.key}`} 
+                            />
+                          ) : (
+                            <ArrowUp className="h-4 w-4 text-muted-foreground opacity-40" data-testid={`sort-none-${column.key}`} />
+                          )}
+                        </span>
+                      )}
+                    </div>
+                    {enableColumnFilters && column.key !== "status" && column.key !== "isCancelled" && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Input
+                          placeholder={`Filter ${column.header}...`}
+                          value={columnFilters[column.key] || ""}
+                          onChange={(e) => {
+                            setColumnFilters(prev => ({
+                              ...prev,
+                              [column.key]: e.target.value
+                            }));
+                            setPage(1);
+                          }}
+                          className="h-7 text-xs px-2"
+                          data-testid={`input-filter-${column.key}`}
+                        />
+                      </div>
                     )}
                   </div>
                 </TableHead>

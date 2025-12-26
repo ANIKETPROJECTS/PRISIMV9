@@ -36,6 +36,7 @@ interface EditorReport {
 }
 
 function EditorReportContent() {
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
   const [toDate, setToDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
   const [selectedEditor, setSelectedEditor] = useState<string>("all");
@@ -226,15 +227,76 @@ function EditorReportContent() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Date</TableHead>
-                            <TableHead>Customer</TableHead>
-                            <TableHead>Project</TableHead>
-                            <TableHead>Room</TableHead>
-                            <TableHead>Time</TableHead>
-                            <TableHead className="text-right">Hours</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {report.bookings.map((booking) => (
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Project</TableHead>
+                          <TableHead>Room</TableHead>
+                          <TableHead>Time</TableHead>
+                          <TableHead className="text-right">Hours</TableHead>
+                        </TableRow>
+                        {/* Column Filters Row */}
+                        <TableRow className="bg-muted/30 hover:bg-muted/30 border-b-0">
+                          <TableHead className="py-1 px-2 h-auto">
+                            <Input
+                              placeholder="Filter Date..."
+                              value={columnFilters[`date-${report.editor.id}`] || ""}
+                              onChange={(e) => setColumnFilters(prev => ({ ...prev, [`date-${report.editor.id}`]: e.target.value }))}
+                              className="h-7 text-[10px] px-2"
+                            />
+                          </TableHead>
+                          <TableHead className="py-1 px-2 h-auto">
+                            <Input
+                              placeholder="Filter Customer..."
+                              value={columnFilters[`customer-${report.editor.id}`] || ""}
+                              onChange={(e) => setColumnFilters(prev => ({ ...prev, [`customer-${report.editor.id}`]: e.target.value }))}
+                              className="h-7 text-[10px] px-2"
+                            />
+                          </TableHead>
+                          <TableHead className="py-1 px-2 h-auto">
+                            <Input
+                              placeholder="Filter Project..."
+                              value={columnFilters[`project-${report.editor.id}`] || ""}
+                              onChange={(e) => setColumnFilters(prev => ({ ...prev, [`project-${report.editor.id}`]: e.target.value }))}
+                              className="h-7 text-[10px] px-2"
+                            />
+                          </TableHead>
+                          <TableHead className="py-1 px-2 h-auto">
+                            <Input
+                              placeholder="Filter Room..."
+                              value={columnFilters[`room-${report.editor.id}`] || ""}
+                              onChange={(e) => setColumnFilters(prev => ({ ...prev, [`room-${report.editor.id}`]: e.target.value }))}
+                              className="h-7 text-[10px] px-2"
+                            />
+                          </TableHead>
+                          <TableHead className="py-1 px-2 h-auto">
+                            <Input
+                              placeholder="Filter Time..."
+                              value={columnFilters[`time-${report.editor.id}`] || ""}
+                              onChange={(e) => setColumnFilters(prev => ({ ...prev, [`time-${report.editor.id}`]: e.target.value }))}
+                              className="h-7 text-[10px] px-2"
+                            />
+                          </TableHead>
+                          <TableHead className="py-1 px-2 h-auto">
+                            <Input
+                              placeholder="Filter Hours..."
+                              value={columnFilters[`hours-${report.editor.id}`] || ""}
+                              onChange={(e) => setColumnFilters(prev => ({ ...prev, [`hours-${report.editor.id}`]: e.target.value }))}
+                              className="h-7 text-[10px] px-2 text-right"
+                            />
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {report.bookings
+                          .filter(booking => {
+                            const dateMatch = !columnFilters[`date-${report.editor.id}`] || format(new Date(booking.bookingDate), "PP").toLowerCase().includes(columnFilters[`date-${report.editor.id}`].toLowerCase());
+                            const customerMatch = !columnFilters[`customer-${report.editor.id}`] || (booking.customer?.name || "").toLowerCase().includes(columnFilters[`customer-${report.editor.id}`].toLowerCase());
+                            const projectMatch = !columnFilters[`project-${report.editor.id}`] || (booking.project?.name || "").toLowerCase().includes(columnFilters[`project-${report.editor.id}`].toLowerCase());
+                            const roomMatch = !columnFilters[`room-${report.editor.id}`] || (booking.room?.name || "").toLowerCase().includes(columnFilters[`room-${report.editor.id}`].toLowerCase());
+                            const timeMatch = !columnFilters[`time-${report.editor.id}`] || `${booking.fromTime}-${booking.toTime}`.toLowerCase().includes(columnFilters[`time-${report.editor.id}`].toLowerCase());
+                            const hoursMatch = !columnFilters[`hours-${report.editor.id}`] || String(booking.totalHours || 0).toLowerCase().includes(columnFilters[`hours-${report.editor.id}`].toLowerCase());
+                            return dateMatch && customerMatch && projectMatch && roomMatch && timeMatch && hoursMatch;
+                          })
+                          .map((booking) => (
                             <TableRow key={booking.id}>
                               <TableCell className="font-mono text-sm">
                                 {format(new Date(booking.bookingDate), "PP")}

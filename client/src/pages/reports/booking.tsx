@@ -309,6 +309,7 @@ function BookingReportContent() {
                 searchPlaceholder="Search bookings..."
                 exportable
                 onExport={handleExport}
+                enableColumnFilters={true}
               />
             )}
           </div>
