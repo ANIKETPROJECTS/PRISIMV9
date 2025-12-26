@@ -584,34 +584,34 @@ export default function ChalanPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {!editingChalan && (
-                <div className="p-3 bg-primary/5 border border-primary/20 rounded-md space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                    <Link2 className="h-4 w-4" />
-                    <span>Select confirmed booking to create chalan *</span>
+                  <div className="p-3 bg-primary/5 border border-primary/20 rounded-md space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                      <Link2 className="h-4 w-4" />
+                      <span>Select confirmed booking to create chalan *</span>
+                    </div>
+                    <Select value={selectedBookingId} onValueChange={handleBookingSelect}>
+                      <SelectTrigger data-testid="select-booking">
+                        <SelectValue placeholder="Select a booking..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bookings
+                          .filter(b => b.status === "confirmed")
+                          .sort((a, b) => new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime())
+                          .slice(0, 50)
+                          .map((booking) => (
+                            <SelectItem key={booking.id} value={booking.id.toString()}>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-3 w-3" />
+                                <span>{format(new Date(booking.bookingDate), "PP")}</span>
+                                <span className="text-muted-foreground">-</span>
+                                <span>{booking.customer?.name || "Unknown"}</span>
+                                <span className="text-muted-foreground">({booking.room?.name})</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Select value={selectedBookingId} onValueChange={handleBookingSelect}>
-                    <SelectTrigger data-testid="select-booking">
-                      <SelectValue placeholder="Select a booking to auto-fill data..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {bookings
-                        .filter(b => b.status === "confirmed")
-                        .sort((a, b) => new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime())
-                        .slice(0, 50)
-                        .map((booking) => (
-                          <SelectItem key={booking.id} value={booking.id.toString()}>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-3 w-3" />
-                              <span>{format(new Date(booking.bookingDate), "PP")}</span>
-                              <span className="text-muted-foreground">-</span>
-                              <span>{booking.customer?.name || "Unknown"}</span>
-                              <span className="text-muted-foreground">({booking.room?.name})</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
@@ -653,15 +653,15 @@ export default function ChalanPage() {
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
-                        disabled={!selectedCustomerId}
+                        disabled={!selectedCustomerId || (!editingChalan && !selectedBookingId)}
                       >
                         <FormControl>
                           <SelectTrigger data-testid="select-project">
-                            <SelectValue placeholder="Select project" />
+                            <SelectValue placeholder={!selectedBookingId && !editingChalan ? "Select booking first" : "Select project"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {projects.filter((p) => p.isActive).map((project) => (
+                          {projects.filter((p) => p.isActive && p.customerId === parseInt(selectedCustomerId)).map((project) => (
                             <SelectItem key={project.id} value={project.id.toString()}>
                               {project.name}
                             </SelectItem>
@@ -697,6 +697,7 @@ export default function ChalanPage() {
                     size="sm"
                     onClick={() => append({ description: "", quantity: "1", rate: "0" })}
                     data-testid="button-add-item"
+                    disabled={!editingChalan && !selectedBookingId}
                   >
                     <Plus className="h-4 w-4 mr-1" />
                     Add Item
@@ -705,7 +706,7 @@ export default function ChalanPage() {
 
                 {fields.map((field, index) => (
                   <Card key={field.id} className="relative">
-                    {index > 0 && (
+                    {index > 0 && !selectedBookingId && (
                       <Button
                         type="button"
                         variant="ghost"
@@ -725,7 +726,11 @@ export default function ChalanPage() {
                           <FormItem>
                             <FormLabel>Description *</FormLabel>
                             <FormControl>
-                              <Input data-testid={`input-item-description-${index}`} {...field} />
+                              <Input 
+                                data-testid={`input-item-description-${index}`} 
+                                {...field} 
+                                disabled={!editingChalan && !selectedBookingId}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -745,6 +750,7 @@ export default function ChalanPage() {
                                   step="any"
                                   data-testid={`input-item-quantity-${index}`}
                                   {...field}
+                                  disabled={!editingChalan && !selectedBookingId}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -764,6 +770,7 @@ export default function ChalanPage() {
                                   step="any"
                                   data-testid={`input-item-rate-${index}`}
                                   {...field}
+                                  disabled={!editingChalan && !selectedBookingId}
                                 />
                               </FormControl>
                               <FormMessage />
