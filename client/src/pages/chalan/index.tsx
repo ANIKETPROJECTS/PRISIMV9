@@ -64,6 +64,7 @@ const chalanFormSchema = z.object({
   chalanDate: z.string().min(1, "Date is required"),
   notes: z.string().optional(),
   items: z.array(chalanItemSchema).min(1, "At least one item is required"),
+  bookingId: z.string().optional(),
 });
 
 type ChalanFormValues = z.infer<typeof chalanFormSchema>;
@@ -398,10 +399,19 @@ export default function ChalanPage() {
   };
 
   const onSubmit = (data: ChalanFormValues) => {
+    if (!selectedBookingId && !editingChalan) {
+      toast({
+        title: "Booking Required",
+        description: "A confirmed booking must be selected to create a chalan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (editingChalan) {
       updateMutation.mutate({ ...data, id: editingChalan.id });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate({ ...data, bookingId: parseInt(selectedBookingId) });
     }
   };
 

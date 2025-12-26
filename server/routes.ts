@@ -772,6 +772,12 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     try {
       const id = parseInt(req.params.id);
       
+      // Check if booking has a chalan - bookings with chalans are locked
+      const existingChalan = await storage.getChalanByBookingId(id);
+      if (existingChalan) {
+        return res.status(403).json({ message: "Booking is locked because a chalan has been created. Delete the chalan first to edit the booking." });
+      }
+
       // Check if booking is cancelled - cancelled bookings are read-only
       const existingBooking = await storage.getBooking(id);
       if (!existingBooking) {
@@ -905,15 +911,18 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
       const { items, ...chalanData } = req.body;
       const data = insertChalanSchema.parse(chalanData);
       
+      // Enforce: Chalan must be generated only from a booking
+      if (!data.bookingId) {
+        return res.status(400).json({ message: "Chalan must be created from a confirmed booking. Manual creation is blocked." });
+      }
+
       // Check if a chalan already exists for this booking (one chalan per booking rule)
-      if (data.bookingId) {
-        const existingChalan = await storage.getChalanByBookingId(data.bookingId);
-        if (existingChalan) {
-          return res.status(409).json({ 
-            message: "A chalan already exists for this booking. Each booking can only have one chalan.",
-            existingChalanId: existingChalan.id
-          });
-        }
+      const existingChalan = await storage.getChalanByBookingId(data.bookingId);
+      if (existingChalan) {
+        return res.status(409).json({ 
+          message: "A chalan already exists for this booking. Each booking can only have one chalan.",
+          existingChalanId: existingChalan.id
+        });
       }
       
       const chalan = await storage.createChalan(data, items || []);

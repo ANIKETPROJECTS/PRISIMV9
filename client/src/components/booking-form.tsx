@@ -274,20 +274,23 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const isFormDisabled = readOnly || isLocked || isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {readOnly ? "View Booking (Read Only)" : booking ? "Edit Booking" : "New Booking"}
+            {readOnly ? "View Booking (Read Only)" : isLocked ? "View Booking (Locked)" : booking ? "Edit Booking" : "New Booking"}
           </DialogTitle>
           <DialogDescription>
             {readOnly 
               ? "This booking is cancelled and cannot be edited."
-              : booking 
-                ? "Update the booking details below." 
-                : "Fill in the details to create a new booking."}
+              : isLocked
+                ? "This booking is linked to a chalan and cannot be edited."
+                : booking 
+                  ? "Update the booking details below." 
+                  : "Fill in the details to create a new booking."}
           </DialogDescription>
         </DialogHeader>
 
@@ -319,6 +322,15 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {isLocked && (
+              <Alert className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Booking Locked</AlertTitle>
+                <AlertDescription>
+                  This booking is linked to an existing chalan and cannot be edited.
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -326,7 +338,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Room *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isFormDisabled}>
                       <FormControl>
                         <SelectTrigger data-testid="select-room">
                           <SelectValue placeholder="Select room" />
@@ -351,7 +363,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Customer *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isFormDisabled}>
                       <FormControl>
                         <SelectTrigger data-testid="select-customer">
                           <SelectValue placeholder="Select customer" />
@@ -437,7 +449,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Editor</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={isFormDisabled}>
                     <FormControl>
                       <SelectTrigger data-testid="select-editor">
                         <SelectValue placeholder="Select editor" />
@@ -464,7 +476,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                   <FormItem>
                     <FormLabel>Date *</FormLabel>
                     <FormControl>
-                      <Input type="date" data-testid="input-booking-date" disabled={readOnly} {...field} />
+                      <Input type="date" data-testid="input-booking-date" disabled={isFormDisabled} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -478,7 +490,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                   <FormItem>
                     <FormLabel>From Time *</FormLabel>
                     <FormControl>
-                      <Input type="time" data-testid="input-from-time" disabled={readOnly} {...field} />
+                      <Input type="time" data-testid="input-from-time" disabled={isFormDisabled} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -492,7 +504,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                   <FormItem>
                     <FormLabel>To Time *</FormLabel>
                     <FormControl>
-                      <Input type="time" data-testid="input-to-time" disabled={readOnly} {...field} />
+                      <Input type="time" data-testid="input-to-time" disabled={isFormDisabled} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -508,7 +520,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                   <FormItem>
                     <FormLabel>Actual From</FormLabel>
                     <FormControl>
-                      <Input type="time" data-testid="input-actual-from-time" disabled={readOnly} {...field} />
+                      <Input type="time" data-testid="input-actual-from-time" disabled={isFormDisabled} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -522,7 +534,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                   <FormItem>
                     <FormLabel>Actual To</FormLabel>
                     <FormControl>
-                      <Input type="time" data-testid="input-actual-to-time" disabled={readOnly} {...field} />
+                      <Input type="time" data-testid="input-actual-to-time" disabled={isFormDisabled} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -539,7 +551,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                       <Input 
                         type="text" 
                         data-testid="input-break-hours"
-                        disabled={readOnly}
+                        disabled={isFormDisabled}
                         {...field} 
                       />
                     </FormControl>
@@ -556,7 +568,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isFormDisabled}>
                       <FormControl>
                         <SelectTrigger data-testid="select-status">
                           <SelectValue placeholder="Select status" />
@@ -586,7 +598,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                       placeholder="Add any additional notes..."
                       className="resize-none"
                       data-testid="input-notes"
-                      disabled={readOnly}
+                      disabled={isFormDisabled}
                       {...field}
                     />
                   </FormControl>
@@ -625,9 +637,9 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                 onClick={() => onOpenChange(false)}
                 data-testid="button-cancel"
               >
-                {readOnly ? "Close" : "Cancel"}
+                {isFormDisabled ? "Close" : "Cancel"}
               </Button>
-              {!readOnly && (
+              {!isFormDisabled && (
                 <Button type="submit" disabled={isPending} data-testid="button-save-booking">
                   {isPending ? "Saving..." : booking ? "Update Booking" : "Create Booking"}
                 </Button>
