@@ -500,6 +500,10 @@ export default function ChalanPage() {
         ) : (
           <div className="space-y-4">
             <div className="flex justify-end gap-2">
+              <Button onClick={handleOpenDialog} data-testid="button-create-chalan">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Chalan
+              </Button>
               <Button 
                 variant="outline" 
                 onClick={() => setLocation("/chalan/revise")}
@@ -580,10 +584,10 @@ export default function ChalanPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {!editingChalan && (
-                <div className="p-3 bg-muted/50 rounded-md space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="p-3 bg-primary/5 border border-primary/20 rounded-md space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
                     <Link2 className="h-4 w-4" />
-                    <span>Quick fill from booking (optional)</span>
+                    <span>Select confirmed booking to create chalan *</span>
                   </div>
                   <Select value={selectedBookingId} onValueChange={handleBookingSelect}>
                     <SelectTrigger data-testid="select-booking">
@@ -617,10 +621,14 @@ export default function ChalanPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Customer *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value}
+                        disabled={!editingChalan && !selectedBookingId}
+                      >
                         <FormControl>
                           <SelectTrigger data-testid="select-customer">
-                            <SelectValue placeholder="Select customer" />
+                            <SelectValue placeholder={!selectedBookingId && !editingChalan ? "Select booking first" : "Select customer"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>

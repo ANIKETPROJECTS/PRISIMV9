@@ -1,5 +1,5 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, boolean, time, date, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, time, date, pgEnum, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -116,8 +116,8 @@ export const bookings = pgTable("bookings", {
   toTime: time("to_time").notNull(),
   actualFromTime: time("actual_from_time"),
   actualToTime: time("actual_to_time"),
-  breakHours: integer("break_hours").default(0),
-  totalHours: integer("total_hours"),
+  breakHours: numeric("break_hours").default("0"),
+  totalHours: numeric("total_hours"),
   status: bookingStatusEnum("status").notNull().default("planning"),
   cancelReason: text("cancel_reason"),
   cancelledAt: timestamp("cancelled_at"),
