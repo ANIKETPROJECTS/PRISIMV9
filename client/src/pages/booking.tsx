@@ -87,6 +87,7 @@ function BookingContent() {
   const [bookingFormOpen, setBookingFormOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState<BookingWithRelations | null>(null);
   const [viewingCancelledBooking, setViewingCancelledBooking] = useState<BookingWithRelations | null>(null);
+  const [viewingBookingWithChalan, setViewingBookingWithChalan] = useState<BookingWithRelations | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancellingBooking, setCancellingBooking] = useState<BookingWithRelations | null>(null);
   const [cancelReason, setCancelReason] = useState("");
@@ -187,11 +188,7 @@ function BookingContent() {
     if (booking.status === "cancelled") {
       setViewingCancelledBooking(booking);
     } else if (hasChalan(booking.id!)) {
-      toast({
-        title: "Cannot Edit Booking",
-        description: "This booking cannot be edited because a chalan has been created. Please delete the chalan first if you need to edit the booking.",
-        variant: "destructive",
-      });
+      setViewingBookingWithChalan(booking);
     } else {
       setEditingBooking(booking);
       setBookingFormOpen(true);
@@ -517,6 +514,15 @@ function BookingContent() {
           if (!open) setViewingCancelledBooking(null);
         }}
         booking={viewingCancelledBooking}
+        readOnly={true}
+      />
+
+      <BookingForm
+        open={!!viewingBookingWithChalan}
+        onOpenChange={(open) => {
+          if (!open) setViewingBookingWithChalan(null);
+        }}
+        booking={viewingBookingWithChalan}
         readOnly={true}
       />
 
