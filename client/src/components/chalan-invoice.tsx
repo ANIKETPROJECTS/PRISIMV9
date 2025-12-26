@@ -110,7 +110,6 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                       <th className="px-3 py-2 text-left font-semibold">Customer</th>
                       <th className="px-3 py-2 text-left font-semibold">Booking Time (From-To)</th>
                       <th className="px-3 py-2 text-left font-semibold">Actual Time (From-To)</th>
-                      <th className="px-3 py-2 text-left font-semibold">Break Hours</th>
                       <th className="px-3 py-2 text-left font-semibold">Total Hours</th>
                     </tr>
                   </thead>
@@ -122,12 +121,18 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                           ? `${chalan.fromTime.slice(0, 5)} - ${chalan.toTime.slice(0, 5)}`
                           : "—"}
                       </td>
-                      <td className="px-3 py-2 font-mono">
-                        {chalan.actualFromTime && chalan.actualToTime
-                          ? `${chalan.actualFromTime.slice(0, 5)} - ${chalan.actualToTime.slice(0, 5)}`
-                          : "—"}
+                      <td className="px-3 py-2">
+                        <div className="space-y-1">
+                          <div className="font-mono">
+                            {chalan.actualFromTime && chalan.actualToTime
+                              ? `${chalan.actualFromTime.slice(0, 5)} - ${chalan.actualToTime.slice(0, 5)}`
+                              : "—"}
+                          </div>
+                          <div className="font-mono text-muted-foreground">
+                            Break: {chalan.breakHours || "0"} hrs
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-3 py-2 font-mono">{chalan.breakHours || "0"} hrs</td>
                       <td className="px-3 py-2 font-mono font-semibold">{chalan.totalHours || "0"} hrs</td>
                     </tr>
                   </tbody>
