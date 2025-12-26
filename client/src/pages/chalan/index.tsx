@@ -65,6 +65,8 @@ const chalanFormSchema = z.object({
   notes: z.string().optional(),
   items: z.array(chalanItemSchema).min(1, "At least one item is required"),
   bookingId: z.string().optional(),
+  editorId: z.string().optional(),
+  roomId: z.string().optional(),
   fromTime: z.string().optional(),
   toTime: z.string().optional(),
   actualFromTime: z.string().optional(),
@@ -132,6 +134,8 @@ export default function ChalanPage() {
       chalanDate: format(new Date(), "yyyy-MM-dd"),
       notes: "",
       items: [{ description: "", quantity: "1", rate: "0" }],
+      editorId: "",
+      roomId: "",
       fromTime: "",
       toTime: "",
       actualFromTime: "",
@@ -222,6 +226,8 @@ export default function ChalanPage() {
         totalAmount: totalAmount.toString(),
         items,
         bookingId: selectedBookingId ? parseInt(selectedBookingId) : undefined,
+        editorId: data.editorId ? parseInt(data.editorId) : undefined,
+        roomId: data.roomId ? parseInt(data.roomId) : undefined,
         fromTime: data.fromTime,
         toTime: data.toTime,
         actualFromTime: data.actualFromTime,
@@ -268,6 +274,8 @@ export default function ChalanPage() {
         notes: data.notes,
         totalAmount: totalAmount.toString(),
         items,
+        editorId: data.editorId ? parseInt(data.editorId) : undefined,
+        roomId: data.roomId ? parseInt(data.roomId) : undefined,
         fromTime: data.fromTime,
         toTime: data.toTime,
         actualFromTime: data.actualFromTime,
@@ -350,6 +358,8 @@ export default function ChalanPage() {
       chalanDate: format(new Date(), "yyyy-MM-dd"),
       notes: "",
       items: [{ description: "", quantity: "1", rate: "0" }],
+      editorId: "",
+      roomId: "",
       fromTime: "",
       toTime: "",
       actualFromTime: "",
@@ -372,6 +382,8 @@ export default function ChalanPage() {
     form.setValue("projectId", booking.projectId.toString());
     form.setValue("chalanDate", booking.bookingDate);
     form.setValue("notes", booking.notes || "");
+    form.setValue("roomId", booking.roomId.toString());
+    if (booking.editorId) form.setValue("editorId", booking.editorId.toString());
     
     // Auto-populate time fields from booking
     if (booking.fromTime) form.setValue("fromTime", booking.fromTime);
@@ -419,6 +431,14 @@ export default function ChalanPage() {
       projectId: chalan.projectId.toString(),
       chalanDate: chalan.chalanDate,
       notes: chalan.notes || "",
+      editorId: chalan.editorId?.toString() || "",
+      roomId: chalan.roomId?.toString() || "",
+      fromTime: chalan.fromTime || "",
+      toTime: chalan.toTime || "",
+      actualFromTime: chalan.actualFromTime || "",
+      actualToTime: chalan.actualToTime || "",
+      breakHours: chalan.breakHours?.toString() || "",
+      totalHours: chalan.totalHours?.toString() || "",
       items: chalan.items?.length ? chalan.items.map(item => ({
         description: item.description,
         quantity: (item.quantity ?? "1").toString(),
@@ -689,7 +709,6 @@ export default function ChalanPage() {
                       <Select 
                         onValueChange={field.onChange} 
                         value={field.value}
-                        disabled={!editingChalan && !selectedBookingId}
                       >
                         <FormControl>
                           <SelectTrigger data-testid="select-customer">
@@ -716,9 +735,9 @@ export default function ChalanPage() {
                     <FormItem>
                       <FormLabel>Project *</FormLabel>
                       <Select
+                        disabled={true}
                         onValueChange={field.onChange}
                         value={field.value}
-                        disabled={!selectedCustomerId || (!editingChalan && !selectedBookingId)}
                       >
                         <FormControl>
                           <SelectTrigger data-testid="select-project">
@@ -746,13 +765,12 @@ export default function ChalanPage() {
                   <FormItem>
                     <FormLabel>Chalan Date *</FormLabel>
                     <FormControl>
-                      <Input type="date" data-testid="input-chalan-date" {...field} />
+                      <Input type="date" data-testid="input-chalan-date" {...field} disabled={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
 
               <FormField
                 control={form.control}
@@ -761,7 +779,7 @@ export default function ChalanPage() {
                   <FormItem>
                     <FormLabel>Notes</FormLabel>
                     <FormControl>
-                      <Textarea data-testid="input-notes" {...field} />
+                      <Textarea data-testid="input-notes" {...field} disabled={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
