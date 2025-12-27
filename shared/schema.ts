@@ -40,7 +40,7 @@ export const customers = pgTable("customers", {
   name: text("name").notNull(),
   companyName: text("company_name"),
   address: text("address"),
-  phone: text("phone"),
+  phone: text("phone").notNull().unique(),
   email: text("email"),
   gstNumber: text("gst_number"),
   isActive: boolean("is_active").notNull().default(true),
@@ -94,7 +94,7 @@ export const editors = pgTable("editors", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   name: text("name").notNull(),
   editorType: editorTypeEnum("editor_type").notNull(),
-  phone: text("phone"),
+  phone: text("phone").notNull().unique(),
   email: text("email"),
   joinDate: date("join_date"),
   leaveDate: date("leave_date"),
@@ -346,11 +346,17 @@ export const userModuleAccessRelations = relations(userModuleAccess, ({ one }) =
 export const insertCompanySchema = createInsertSchema(companies).omit({ id: true, createdAt: true });
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertDesignationSchema = createInsertSchema(designations).omit({ id: true, createdAt: true });
-export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true, createdAt: true });
-export const insertCustomerContactSchema = createInsertSchema(customerContacts).omit({ id: true });
+export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true, createdAt: true }).extend({
+  phone: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits"),
+});
+export const insertCustomerContactSchema = createInsertSchema(customerContacts).omit({ id: true }).extend({
+  phone: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits").optional().or(z.literal("")),
+});
 export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true });
 export const insertRoomSchema = createInsertSchema(rooms).omit({ id: true, createdAt: true });
-export const insertEditorSchema = createInsertSchema(editors).omit({ id: true, createdAt: true });
+export const insertEditorSchema = createInsertSchema(editors).omit({ id: true, createdAt: true }).extend({
+  phone: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits"),
+});
 export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertBookingLogSchema = createInsertSchema(bookingLogs).omit({ id: true, createdAt: true });
 export const insertEditorLeaveSchema = createInsertSchema(editorLeaves).omit({ id: true, createdAt: true });

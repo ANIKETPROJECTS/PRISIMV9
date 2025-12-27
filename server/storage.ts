@@ -281,6 +281,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createCustomer(customer: InsertCustomer, contacts?: InsertCustomerContact[]): Promise<Customer> {
+    const existing = await db.select().from(customers).where(eq(customers.phone, customer.phone)).limit(1);
+    if (existing.length > 0) {
+      throw new Error("A customer with this mobile number already exists");
+    }
     const [created] = await db.insert(customers).values(customer).returning();
     
     if (contacts && contacts.length > 0) {
@@ -293,6 +297,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCustomer(id: number, customer: Partial<InsertCustomer>, contacts?: (InsertCustomerContact & { id?: number })[]): Promise<Customer | undefined> {
+    if (customer.phone) {
+      const existing = await db.select().from(customers).where(and(eq(customers.phone, customer.phone), sql`id != ${id}`)).limit(1);
+      if (existing.length > 0) {
+        throw new Error("A customer with this mobile number already exists");
+      }
+    }
     const [updated] = await db.update(customers).set(customer).where(eq(customers.id, id)).returning();
     
     if (contacts !== undefined) {
@@ -472,11 +482,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createEditor(editor: InsertEditor): Promise<Editor> {
+    const existing = await db.select().from(editors).where(eq(editors.phone, editor.phone)).limit(1);
+    if (existing.length > 0) {
+      throw new Error("An editor with this mobile number already exists");
+    }
     const [created] = await db.insert(editors).values(editor).returning();
     return created;
   }
 
   async updateEditor(id: number, editor: Partial<InsertEditor>): Promise<Editor | undefined> {
+    if (editor.phone) {
+      const existing = await db.select().from(editors).where(and(eq(editors.phone, editor.phone), sql`id != ${id}`)).limit(1);
+      if (existing.length > 0) {
+        throw new Error("An editor with this mobile number already exists");
+      }
+    }
     const [updated] = await db.update(editors).set(editor).where(eq(editors.id, id)).returning();
     return updated;
   }
