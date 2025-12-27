@@ -168,8 +168,11 @@ function BookingReportContent() {
     },
   ];
 
-  const totalHours = filteredBookings.reduce((sum, b) => sum + (b.totalHours || 0), 0);
+  const totalBookings = filteredBookings.length;
   const confirmedCount = filteredBookings.filter((b) => b.status === "confirmed").length;
+  const planningCount = filteredBookings.filter((b) => b.status === "planning").length;
+  const tentativeCount = filteredBookings.filter((b) => b.status === "tentative").length;
+  const cancelledCount = filteredBookings.filter((b) => b.status === "cancelled").length;
 
   return (
     <div className="flex flex-col h-full">
@@ -282,7 +285,7 @@ function BookingReportContent() {
                     <CalendarDays className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xl font-bold">{filteredBookings.length}</p>
+                    <p className="text-xl font-bold">{totalBookings}</p>
                     <p className="text-xs text-muted-foreground">Total Bookings</p>
                   </div>
                 </div>
@@ -296,14 +299,34 @@ function BookingReportContent() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-muted-foreground" />
+                  <div className="w-10 h-10 rounded-lg bg-booking-planning/10 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-booking-planning" />
                   </div>
                   <div>
-                    <p className="text-xl font-bold">{totalHours}</p>
-                    <p className="text-xs text-muted-foreground">Total Hours</p>
+                    <p className="text-xl font-bold">{planningCount}</p>
+                    <p className="text-xs text-muted-foreground">Planning</p>
                   </div>
                 </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-booking-tentative/10 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-booking-tentative" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold">{tentativeCount}</p>
+                    <p className="text-xs text-muted-foreground">Tentative</p>
+                  </div>
+                </div>
+                {!hideCancelled && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-booking-cancelled/10 flex items-center justify-center">
+                      <Clock className="h-5 w-5 text-booking-cancelled" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">{cancelledCount}</p>
+                      <p className="text-xs text-muted-foreground">Cancelled</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
