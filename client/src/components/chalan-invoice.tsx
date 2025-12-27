@@ -145,8 +145,8 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                   <tbody>
                     <tr className="border-b border-foreground/20 hover:bg-muted/30">
                       <td className="px-3 py-2">{chalan.customer?.name || "—"}</td>
-                      <td className="px-3 py-2">{chalan.booking?.editor?.name || "—"}</td>
-                      <td className="px-3 py-2">{chalan.booking?.room?.name || "—"}</td>
+                      <td className="px-3 py-2">{chalan.editor?.name || chalan.booking?.editor?.name || "—"}</td>
+                      <td className="px-3 py-2">{chalan.room?.name || chalan.booking?.room?.name || "—"}</td>
                       <td className="px-3 py-2 font-mono">
                         {chalan.fromTime && chalan.toTime 
                           ? `${chalan.fromTime.slice(0, 5)} - ${chalan.toTime.slice(0, 5)}`

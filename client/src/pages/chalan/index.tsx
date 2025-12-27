@@ -545,7 +545,7 @@ export default function ChalanPage() {
     {
       key: "editor",
       header: "Editor",
-      cell: (row) => row.booking?.editor?.name || "-",
+      cell: (row) => row.editor?.name || row.booking?.editor?.name || "-",
     },
     {
       key: "chalanDate",

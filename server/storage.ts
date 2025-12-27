@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, gte, lte, sql, desc, or, inArray, asc, like } from "drizzle-orm";
+import { eq, and, gte, lte, sql, desc, or, inArray, asc, like, aliasedTable } from "drizzle-orm";
 import {
   companies,
   users,
@@ -829,11 +829,16 @@ export class DatabaseStorage implements IStorage {
 
   // Chalans
   async getChalans(filters?: { from?: string; to?: string; customerId?: number }): Promise<any[]> {
+    const bookingEditors = aliasedTable(editors, "booking_editors");
     let query = db
       .select()
       .from(chalans)
       .leftJoin(customers, eq(chalans.customerId, customers.id))
-      .leftJoin(projects, eq(chalans.projectId, projects.id));
+      .leftJoin(projects, eq(chalans.projectId, projects.id))
+      .leftJoin(editors, eq(chalans.editorId, editors.id))
+      .leftJoin(bookings, eq(chalans.bookingId, bookings.id))
+      .leftJoin(rooms, eq(bookings.roomId, rooms.id))
+      .leftJoin(bookingEditors, eq(bookings.editorId, bookingEditors.id));
 
     const conditions = [];
     if (filters?.from) {
@@ -853,28 +858,39 @@ export class DatabaseStorage implements IStorage {
     const result = await query.orderBy(asc(chalans.chalanDate), asc(chalans.chalanNumber));
     
     const chalanIds = result.map(r => r.chalans.id);
-    const items = chalanIds.length > 0
-      ? await db.select().from(chalanItems).where(inArray(chalanItems.chalanId, chalanIds)).orderBy(asc(chalanItems.chalanId), asc(chalanItems.id))
+    const itemsList = chalanIds.length > 0
+      ? await db.select().from(chalanItems).where(inArray(chalanItems.chalanId, chalanIds)).orderBy(asc(chalanItems.id))
       : [];
-    const revisions = chalanIds.length > 0
-      ? await db.select().from(chalanRevisions).where(inArray(chalanRevisions.chalanId, chalanIds)).orderBy(asc(chalanRevisions.chalanId), asc(chalanRevisions.revisionNumber))
+    const revisionsList = chalanIds.length > 0
+      ? await db.select().from(chalanRevisions).where(inArray(chalanRevisions.chalanId, chalanIds)).orderBy(asc(chalanRevisions.revisionNumber))
       : [];
 
     return result.map(r => ({
       ...r.chalans,
       customer: r.customers || undefined,
       project: r.projects || undefined,
-      items: items.filter(i => i.chalanId === r.chalans.id),
-      revisions: revisions.filter(rev => rev.chalanId === r.chalans.id),
+      editor: r.editors || undefined,
+      booking: r.bookings ? {
+        ...r.bookings,
+        editor: r.booking_editors || undefined,
+        room: r.rooms || undefined
+      } : undefined,
+      items: itemsList.filter(i => i.chalanId === r.chalans.id),
+      revisions: revisionsList.filter(rev => rev.chalanId === r.chalans.id),
     }));
   }
 
   async getChalan(id: number): Promise<any | undefined> {
+    const bookingEditors = aliasedTable(editors, "booking_editors");
     const [result] = await db
       .select()
       .from(chalans)
       .leftJoin(customers, eq(chalans.customerId, customers.id))
       .leftJoin(projects, eq(chalans.projectId, projects.id))
+      .leftJoin(editors, eq(chalans.editorId, editors.id))
+      .leftJoin(bookings, eq(chalans.bookingId, bookings.id))
+      .leftJoin(rooms, eq(bookings.roomId, rooms.id))
+      .leftJoin(bookingEditors, eq(bookings.editorId, bookingEditors.id))
       .where(eq(chalans.id, id));
 
     if (!result) return undefined;
@@ -886,6 +902,12 @@ export class DatabaseStorage implements IStorage {
       ...result.chalans,
       customer: result.customers || undefined,
       project: result.projects || undefined,
+      editor: result.editors || undefined,
+      booking: result.bookings ? {
+        ...result.bookings,
+        editor: result.booking_editors || undefined,
+        room: result.rooms || undefined
+      } : undefined,
       items,
       revisions,
     };
@@ -958,6 +980,14 @@ export class DatabaseStorage implements IStorage {
     if (chalanData.projectId !== undefined) updateData.projectId = chalanData.projectId;
     if (chalanData.chalanDate !== undefined) updateData.chalanDate = chalanData.chalanDate;
     if (chalanData.notes !== undefined) updateData.notes = chalanData.notes;
+    if (chalanData.editorId !== undefined) updateData.editorId = chalanData.editorId;
+    if (chalanData.roomId !== undefined) updateData.roomId = chalanData.roomId;
+    if (chalanData.fromTime !== undefined) updateData.fromTime = chalanData.fromTime;
+    if (chalanData.toTime !== undefined) updateData.toTime = chalanData.toTime;
+    if (chalanData.actualFromTime !== undefined) updateData.actualFromTime = chalanData.actualFromTime;
+    if (chalanData.actualToTime !== undefined) updateData.actualToTime = chalanData.actualToTime;
+    if (chalanData.breakHours !== undefined) updateData.breakHours = chalanData.breakHours;
+    if (chalanData.totalHours !== undefined) updateData.totalHours = chalanData.totalHours;
     if (chalanData.totalAmount !== undefined) {
       updateData.totalAmount = typeof chalanData.totalAmount === 'number' 
         ? chalanData.totalAmount.toString() 
