@@ -491,6 +491,9 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
         if (breakStr.includes('.')) {
           const [bH, bM] = breakStr.split('.').map(Number);
           breakMinutes = (bH || 0) * 60 + (bM || 0);
+        } else if (breakStr.includes(':')) {
+          const [bH, bM] = breakStr.split(':').map(Number);
+          breakMinutes = (bH || 0) * 60 + (bM || 0);
         } else {
           breakMinutes = Number(breakStr) * 60;
         }
@@ -500,6 +503,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
       const h = Math.floor(totalMinutes / 60);
       const m = totalMinutes % 60;
       
+      // Return in HH.mm format where mm is 0-59 (e.g., 3.43)
       return `${h}.${m.toString().padStart(2, '0')}`;
     } catch (e) {
       return null;

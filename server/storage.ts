@@ -107,7 +107,7 @@ export interface IStorage {
   deleteBooking(id: number): Promise<boolean>;
   getBookingLogs(bookingId: number): Promise<BookingLog[]>;
   checkBookingConflicts(booking: { roomId: number; editorId?: number; bookingDate: string; fromTime: string; toTime: string; excludeBookingId?: number }): Promise<{ hasConflict: boolean; conflicts: any[]; editorOnLeave: boolean; leaveInfo?: any }>;
-  calculateBillingHours(fromTime: string, toTime: string, actualFromTime?: string, actualToTime?: string, breakHours?: number): number;
+  calculateBillingHours(fromTime: string, toTime: string, actualFromTime?: string, actualToTime?: string, breakHours?: string | number): number;
 
   // Editor Leaves
   getEditorLeaves(editorId?: number): Promise<(EditorLeave & { editor?: Editor })[]>;
@@ -588,7 +588,7 @@ export class DatabaseStorage implements IStorage {
       booking.toTime,
       booking.actualFromTime || undefined,
       booking.actualToTime || undefined,
-      booking.breakHours || 0
+      booking.breakHours || "0"
     );
     
     const [created] = await db.insert(bookings).values({
@@ -630,7 +630,7 @@ export class DatabaseStorage implements IStorage {
       const toTime = booking.toTime || existing.toTime;
       const actualFromTime = booking.actualFromTime !== undefined ? booking.actualFromTime : existing.actualFromTime;
       const actualToTime = booking.actualToTime !== undefined ? booking.actualToTime : existing.actualToTime;
-      const breakHours = booking.breakHours !== undefined ? booking.breakHours : (existing.breakHours || 0);
+      const breakHours = booking.breakHours !== undefined ? booking.breakHours : (existing.breakHours || "0");
       
       totalHours = this.calculateBillingHours(
         fromTime,
@@ -782,7 +782,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  calculateBillingHours(fromTime: string, toTime: string, actualFromTime?: string, actualToTime?: string, breakHours?: number): number {
+  calculateBillingHours(fromTime: string, toTime: string, actualFromTime?: string, actualToTime?: string, breakHours?: string | number): number {
     // Parse times
     const parseTime = (time: string): number => {
       const [hours, minutes] = time.split(':').map(Number);
@@ -797,16 +797,30 @@ export class DatabaseStorage implements IStorage {
     const endMinutes = parseTime(endTime);
 
     // Calculate total minutes
-    let totalMinutes = endMinutes - startMinutes;
-    if (totalMinutes < 0) totalMinutes += 24 * 60; // Handle overnight bookings
+    let diffMinutes = endMinutes - startMinutes;
+    if (diffMinutes < 0) diffMinutes += 24 * 60; // Handle overnight bookings
 
     // Subtract break hours (convert to minutes)
-    const breakMinutes = (breakHours || 0) * 60;
-    totalMinutes -= breakMinutes;
+    let breakMinutes = 0;
+    if (breakHours) {
+      const breakStr = breakHours.toString();
+      if (breakStr.includes('.')) {
+        const [bH, bM] = breakStr.split('.').map(Number);
+        breakMinutes = (bH || 0) * 60 + (bM || 0);
+      } else if (breakStr.includes(':')) {
+        const [bH, bM] = breakStr.split(':').map(Number);
+        breakMinutes = (bH || 0) * 60 + (bM || 0);
+      } else {
+        breakMinutes = Number(breakStr) * 60;
+      }
+    }
 
-    // Convert to hours (rounded to nearest 0.5)
-    const hours = Math.max(0, Math.round(totalMinutes / 30) * 0.5);
-    return hours;
+    const totalMinutes = Math.max(0, diffMinutes - breakMinutes);
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    
+    // Return as HH.mm format for consistency (e.g. 3.43 instead of 3.85)
+    return parseFloat(`${h}.${m.toString().padStart(2, '0')}`);
   }
 
   // Editor Leaves
