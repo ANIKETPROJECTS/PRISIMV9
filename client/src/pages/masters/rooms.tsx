@@ -92,12 +92,16 @@ export default function RoomsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
-      toast({ title: "Room created successfully" });
+      toast({ 
+        title: "Room Added Successfully", 
+        description: "The new room has been added to the system.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error creating room",
+        title: "Unable to Add Room",
         description: error.message,
         variant: "destructive",
       });
@@ -113,12 +117,16 @@ export default function RoomsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
-      toast({ title: "Room updated successfully" });
+      toast({ 
+        title: "Room Updated Successfully", 
+        description: "The room information has been updated.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating room",
+        title: "Unable to Update Room",
         description: error.message,
         variant: "destructive",
       });
@@ -131,12 +139,16 @@ export default function RoomsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
-      toast({ title: "Room deleted successfully" });
+      toast({ 
+        title: "Room Deleted Successfully", 
+        description: "The room has been removed from the system.",
+        variant: "destructive"
+      });
       setDeleteDialogOpen(false);
     },
     onError: (error: any) => {
       toast({
-        title: "Error deleting room",
+        title: "Unable to Delete Room",
         description: error.message,
         variant: "destructive",
       });
@@ -151,11 +163,15 @@ export default function RoomsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
-      toast({ title: "Status updated" });
+      toast({ 
+        title: "Status Updated",
+        description: "The room's active status has been modified.",
+        variant: "success"
+      });
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating status",
+        title: "Unable to Update Status",
         description: error.message,
         variant: "destructive",
       });

@@ -99,12 +99,16 @@ function LeavesContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/editor-leaves"] });
-      toast({ title: "Leave created successfully" });
+      toast({ 
+        title: "Leave Added Successfully", 
+        description: "The leave record has been created.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error creating leave",
+        title: "Unable to Add Leave",
         description: error.message,
         variant: "destructive",
       });
@@ -122,12 +126,16 @@ function LeavesContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/editor-leaves"] });
-      toast({ title: "Leave updated successfully" });
+      toast({ 
+        title: "Leave Updated Successfully", 
+        description: "The leave information has been updated.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating leave",
+        title: "Unable to Update Leave",
         description: error.message,
         variant: "destructive",
       });
@@ -140,12 +148,16 @@ function LeavesContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/editor-leaves"] });
-      toast({ title: "Leave deleted successfully" });
+      toast({ 
+        title: "Leave Deleted Successfully", 
+        description: "The leave record has been removed.",
+        variant: "destructive"
+      });
       setDeleteDialogOpen(false);
     },
     onError: (error: any) => {
       toast({
-        title: "Error deleting leave",
+        title: "Unable to Delete Leave",
         description: error.message,
         variant: "destructive",
       });

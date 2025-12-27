@@ -284,7 +284,11 @@ export default function ChalanPage() {
       queryClient.invalidateQueries({ predicate: (query) => 
         typeof query.queryKey[0] === 'string' && (query.queryKey[0].startsWith('/api/chalans') || query.queryKey[0] === '/api/bookings')
       });
-      toast({ title: "Chalan created successfully" });
+      toast({ 
+        title: "Chalan Generated", 
+        description: "The chalan has been created and logged successfully.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
@@ -332,7 +336,11 @@ export default function ChalanPage() {
       queryClient.invalidateQueries({ predicate: (query) => 
         typeof query.queryKey[0] === 'string' && query.queryKey[0].startsWith('/api/chalans')
       });
-      toast({ title: "Chalan updated successfully" });
+      toast({ 
+        title: "Chalan Updated", 
+        description: "The chalan modifications have been saved successfully.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
@@ -352,7 +360,11 @@ export default function ChalanPage() {
       queryClient.invalidateQueries({ predicate: (query) => 
         typeof query.queryKey[0] === 'string' && (query.queryKey[0].startsWith('/api/chalans') || query.queryKey[0] === '/api/bookings')
       });
-      toast({ title: "Chalan deleted successfully" });
+      toast({ 
+        title: "Chalan Deleted", 
+        description: "The chalan record has been permanently removed.",
+        variant: "destructive"
+      });
       setDeleteDialogOpen(false);
     },
     onError: (error: any) => {

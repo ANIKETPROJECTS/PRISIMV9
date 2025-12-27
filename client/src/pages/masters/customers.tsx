@@ -147,12 +147,16 @@ export default function CustomersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      toast({ title: "Customer created successfully" });
+      toast({ 
+        title: "Customer Added Successfully", 
+        description: "The new customer record has been created.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error creating customer",
+        title: "Unable to Add Customer",
         description: error.message,
         variant: "destructive",
       });
@@ -165,12 +169,16 @@ export default function CustomersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      toast({ title: "Customer updated successfully" });
+      toast({ 
+        title: "Customer Updated Successfully", 
+        description: "The changes to the customer profile have been saved.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating customer",
+        title: "Unable to Update Customer",
         description: error.message,
         variant: "destructive",
       });
@@ -183,13 +191,17 @@ export default function CustomersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      toast({ title: "Customer deleted successfully" });
+      toast({ 
+        title: "Customer Deleted Successfully", 
+        description: "The customer record has been removed from the system.",
+        variant: "destructive"
+      });
       setDeleteDialogOpen(false);
       setDeletingCustomer(null);
     },
     onError: (error: any) => {
       toast({
-        title: "Error deleting customer",
+        title: "Unable to Delete Customer",
         description: error.message,
         variant: "destructive",
       });
@@ -204,11 +216,15 @@ export default function CustomersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      toast({ title: "Status updated" });
+      toast({ 
+        title: "Status Updated",
+        description: "The customer's active status has been modified.",
+        variant: "success"
+      });
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating status",
+        title: "Unable to Update Status",
         description: error.message,
         variant: "destructive",
       });

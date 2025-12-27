@@ -99,12 +99,16 @@ export default function EditorsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/editors"] });
-      toast({ title: "Editor created successfully" });
+      toast({ 
+        title: "Editor Added Successfully", 
+        description: "The editor has been onboarded successfully.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error creating editor",
+        title: "Unable to Add Editor",
         description: error.message,
         variant: "destructive",
       });
@@ -121,12 +125,16 @@ export default function EditorsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/editors"] });
-      toast({ title: "Editor updated successfully" });
+      toast({ 
+        title: "Editor Updated Successfully", 
+        description: "The editor profile has been updated successfully.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating editor",
+        title: "Unable to Update Editor",
         description: error.message,
         variant: "destructive",
       });
@@ -139,12 +147,16 @@ export default function EditorsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/editors"] });
-      toast({ title: "Editor deleted successfully" });
+      toast({ 
+        title: "Editor Deleted Successfully", 
+        description: "The editor record has been removed from the system.",
+        variant: "destructive"
+      });
       setDeleteDialogOpen(false);
     },
     onError: (error: any) => {
       toast({
-        title: "Error deleting editor",
+        title: "Unable to Delete Editor",
         description: error.message,
         variant: "destructive",
       });
@@ -159,11 +171,15 @@ export default function EditorsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/editors"] });
-      toast({ title: "Status updated" });
+      toast({ 
+        title: "Status Updated",
+        description: "The editor's active status has been modified.",
+        variant: "success"
+      });
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating status",
+        title: "Unable to Update Status",
         description: error.message,
         variant: "destructive",
       });

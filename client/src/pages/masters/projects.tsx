@@ -96,12 +96,16 @@ export default function ProjectsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      toast({ title: "Project created successfully" });
+      toast({ 
+        title: "Project Added Successfully", 
+        description: "The new project has been registered.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error creating project",
+        title: "Unable to Add Project",
         description: error.message,
         variant: "destructive",
       });
@@ -117,12 +121,16 @@ export default function ProjectsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      toast({ title: "Project updated successfully" });
+      toast({ 
+        title: "Project Updated Successfully", 
+        description: "The project information has been updated.",
+        variant: "success"
+      });
       handleCloseDialog();
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating project",
+        title: "Unable to Update Project",
         description: error.message,
         variant: "destructive",
       });
@@ -135,12 +143,16 @@ export default function ProjectsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      toast({ title: "Project deleted successfully" });
+      toast({ 
+        title: "Project Deleted Successfully", 
+        description: "The project has been removed from the system.",
+        variant: "destructive"
+      });
       setDeleteDialogOpen(false);
     },
     onError: (error: any) => {
       toast({
-        title: "Error deleting project",
+        title: "Unable to Delete Project",
         description: error.message,
         variant: "destructive",
       });
@@ -155,11 +167,15 @@ export default function ProjectsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      toast({ title: "Status updated" });
+      toast({ 
+        title: "Status Updated",
+        description: "The project's active status has been modified.",
+        variant: "success"
+      });
     },
     onError: (error: any) => {
       toast({
-        title: "Error updating status",
+        title: "Unable to Update Status",
         description: error.message,
         variant: "destructive",
       });
