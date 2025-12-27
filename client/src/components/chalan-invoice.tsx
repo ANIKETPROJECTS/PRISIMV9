@@ -41,7 +41,7 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 mb-4">
+            <div className="grid grid-cols-2 gap-6 mb-4 items-start">
               <div className="space-y-3">
                 <div>
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Bill To</p>
@@ -162,23 +162,27 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
             <Separator className="my-4" />
 
             <div className="pt-2">
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-5 gap-3">
                 {[
                   { label: "Customer Name", key: "customer-name", value: chalan.customer?.name },
                   { label: "Customer Signature", key: "customer-sig", value: null },
-                  { label: "Editor Name", key: "editor-name", value: chalan.booking?.editor?.name },
+                  { label: "Editor Name", key: "editor-name", value: chalan.booking?.editor?.name || chalan.editor?.name },
                   { label: "Editor Signature", key: "editor-sig", value: null },
                   { label: "Authority Signature", key: "authority-sig", value: null },
                 ].map((item) => (
-                  <div key={item.key} className="text-center">
-                    {item.value && (
-                      <p className="text-xs font-medium mb-2">
-                        {item.value}
-                      </p>
-                    )}
-                    <div className="h-10" />
-                    <div className="border-t-2 border-foreground/50" />
-                    <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide mt-1">{item.label}</p>
+                  <div key={item.key} className="text-center flex flex-col h-full">
+                    <div className="flex-1 flex items-center justify-center mb-2">
+                      {item.value && (
+                        <p className="text-xs font-medium">
+                          {item.value}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <div className="h-10" />
+                      <div className="border-t-2 border-foreground/50" />
+                      <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">{item.label}</p>
+                    </div>
                   </div>
                 ))}
               </div>

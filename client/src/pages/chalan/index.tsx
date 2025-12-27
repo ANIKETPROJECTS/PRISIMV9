@@ -191,6 +191,17 @@ export default function ChalanPage() {
   }, [actualFromTime, actualToTime, breakHours, form]);
 
   useEffect(() => {
+    if (editors.length > 0 && user?.fullName && !editingChalan && dialogOpen) {
+      const matchingEditor = editors.find(
+        editor => editor.name.toLowerCase() === user.fullName?.toLowerCase()
+      );
+      if (matchingEditor) {
+        form.setValue("editorId", matchingEditor.id.toString());
+      }
+    }
+  }, [editors, user?.fullName, editingChalan, dialogOpen, form]);
+
+  useEffect(() => {
     if (urlParamsProcessed) return;
     
     const params = new URLSearchParams(searchString);
