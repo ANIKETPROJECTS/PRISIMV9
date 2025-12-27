@@ -138,6 +138,11 @@ function BookingReportContent() {
               Actual: {row.actualFromTime?.slice(0, 5) || '--:--'} - {row.actualToTime?.slice(0, 5) || '--:--'}
             </div>
           )}
+          {row.breakHours && parseFloat(row.breakHours) > 0 && (
+            <div className="font-mono text-xs text-muted-foreground">
+              Break: {row.breakHours} hrs
+            </div>
+          )}
         </div>
       ),
     },
