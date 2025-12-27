@@ -688,11 +688,22 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     if (updated) {
+      // Find associated chalan
+      const [chalan] = await db.select({ id: chalans.id }).from(chalans).where(eq(chalans.bookingId, id)).limit(1);
+      if (chalan) {
+        // Automatically delete chalan and its dependencies when booking is cancelled
+        await db.transaction(async (tx) => {
+          await tx.delete(chalanRevisions).where(eq(chalanRevisions.chalanId, chalan.id));
+          await tx.delete(chalanItems).where(eq(chalanItems.chalanId, chalan.id));
+          await tx.delete(chalans).where(eq(chalans.id, chalan.id));
+        });
+      }
+
       await db.insert(bookingLogs).values({
         bookingId: id,
         userId: userId || null,
         action: "Cancelled",
-        changes: `Reason: ${reason}`,
+        changes: `Reason: ${reason}${chalan ? ". Associated chalan automatically deleted." : ""}`,
       });
     }
     
