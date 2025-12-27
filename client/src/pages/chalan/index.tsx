@@ -69,10 +69,10 @@ const chalanFormSchema = z.object({
   roomId: z.string().optional(),
   fromTime: z.string().optional(),
   toTime: z.string().optional(),
-  actualFromTime: z.string().optional(),
-  actualToTime: z.string().optional(),
-  breakHours: z.string().optional(),
-  totalHours: z.string().optional(),
+  actualFromTime: z.string().optional().nullable().or(z.literal("")),
+  actualToTime: z.string().optional().nullable().or(z.literal("")),
+  breakHours: z.string().optional().nullable().or(z.literal("")),
+  totalHours: z.string().optional().nullable().or(z.literal("")),
 });
 
 type ChalanFormValues = z.infer<typeof chalanFormSchema>;

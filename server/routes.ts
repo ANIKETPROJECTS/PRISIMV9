@@ -475,8 +475,8 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
   });
 
   // Helper function to calculate total hours from times and break
-  const calculateTotalHours = (from: string | null, to: string | null, breakHours: string | number | null) => {
-    if (!from || !to) return null;
+  const calculateTotalHours = (from: string | null | undefined, to: string | null | undefined, breakHours: string | number | null | undefined) => {
+    if (!from || !to || from === "" || to === "") return null;
     
     try {
       const [fromH, fromM] = from.split(':').map(Number);
