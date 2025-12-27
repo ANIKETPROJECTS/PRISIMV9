@@ -611,6 +611,10 @@ export default function UsersPage() {
                             placeholder="+91 98765 43210"
                             data-testid="input-mobile" 
                             {...field} 
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                              field.onChange(value);
+                            }}
                           />
                         </div>
                       </FormControl>
