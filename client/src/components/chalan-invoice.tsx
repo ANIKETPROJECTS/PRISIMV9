@@ -171,7 +171,7 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                   { label: "Authority Signature", key: "authority-sig", value: null },
                 ].map((item) => (
                   <div key={item.key} className="text-center flex flex-col h-full">
-                    <div className="flex-1 flex items-center justify-center mb-2">
+                    <div className="flex-1 flex items-end justify-center mb-1">
                       {item.value && (
                         <p className="text-xs font-medium">
                           {item.value}
@@ -179,7 +179,7 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                       )}
                     </div>
                     <div className="space-y-1">
-                      <div className="h-10" />
+                      <div className="h-4" />
                       <div className="border-t-2 border-foreground/50" />
                       <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">{item.label}</p>
                     </div>
