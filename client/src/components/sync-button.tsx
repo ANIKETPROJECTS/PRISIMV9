@@ -35,6 +35,7 @@ export function SyncButton({ queryKeys, onSync, className }: SyncButtonProps) {
       toast({
         title: "Data refreshed",
         description: "Latest data has been loaded.",
+        variant: "info",
       });
     } catch (error) {
       toast({
