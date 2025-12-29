@@ -121,7 +121,9 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
       actualToTime: formatTimeForInput(booking?.actualToTime),
       breakHours: (() => {
         if (!booking?.breakHours) return "00:00";
-        const totalMinutes = parseFloat(booking.breakHours.toString()) * 60;
+        const val = booking.breakHours.toString();
+        if (val.includes(":")) return val;
+        const totalMinutes = parseFloat(val) * 60;
         const h = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
         const m = Math.round(totalMinutes % 60).toString().padStart(2, '0');
         return `${h}:${m}`;
@@ -158,7 +160,9 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
             actualToTime: formatTimeForInput(booking?.actualToTime),
             breakHours: (() => {
               if (!booking?.breakHours) return "00:00";
-              const totalMinutes = parseFloat(booking.breakHours.toString()) * 60;
+              const val = booking.breakHours.toString();
+              if (val.includes(":")) return val;
+              const totalMinutes = parseFloat(val) * 60;
               const h = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
               const m = Math.round(totalMinutes % 60).toString().padStart(2, '0');
               return `${h}:${m}`;

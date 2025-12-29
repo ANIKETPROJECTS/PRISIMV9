@@ -177,15 +177,22 @@ export default function ChalanPage() {
 
       const fromMinutes = timeToMinutes(actualFromTime);
       const toMinutes = timeToMinutes(actualToTime);
-      const breakMinutes = breakHours ? parseFloat(breakHours) * 60 : 0;
+      
+      // Handle breakHours which is stored as decimal in DB but used as HH:mm in UI logic
+      const breakParts = breakHours ? breakHours.split(":") : ["0", "0"];
+      const breakMinutes = breakParts.length === 2 
+        ? parseInt(breakParts[0]) * 60 + parseInt(breakParts[1])
+        : parseFloat(breakHours || "0") * 60;
 
       let diffMinutes = toMinutes - fromMinutes;
       if (diffMinutes < 0) diffMinutes += 24 * 60;
 
       const totalMinutes = diffMinutes - breakMinutes;
-      const totalHours = (totalMinutes / 60).toFixed(2);
+      const h = Math.floor(totalMinutes / 60);
+      const m = Math.round(totalMinutes % 60);
+      const totalHoursStr = `${h}:${m.toString().padStart(2, "0")}`;
 
-      form.setValue("totalHours", totalHours);
+      form.setValue("totalHours", totalHoursStr);
     }
   }, [actualFromTime, actualToTime, breakHours, form]);
 

@@ -17,27 +17,27 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
   const { company } = useAuth();
 
   const formatBreakHours = (value: string | number | null | undefined) => {
-    if (!value) return "0.00 hrs/min";
+    if (!value) return "0:00";
     const strValue = value.toString();
-    const [hStr, mStr] = strValue.split('.');
-    const hours = parseInt(hStr) || 0;
-    const minutes = parseInt(mStr?.slice(0, 2)) || 0;
+    if (strValue.includes(":")) return strValue;
     
-    const totalMinutes = (hours * 60) + minutes;
-    const finalHours = Math.floor(totalMinutes / 60);
-    const finalMins = totalMinutes % 60;
-    
-    return `${finalHours}.${finalMins.toString().padStart(2, '0')} hrs/min`;
+    // Fallback for decimal values
+    const decimal = parseFloat(strValue);
+    const h = Math.floor(decimal);
+    const m = Math.round((decimal - h) * 60);
+    return `${h}:${m.toString().padStart(2, '0')}`;
   };
 
   const formatTotalHours = (value: string | number | null | undefined) => {
-    if (!value) return "0.00 hrs";
+    if (!value) return "0:00";
     const strValue = value.toString();
-    const [hStr, mStr] = strValue.split('.');
-    const hours = parseInt(hStr) || 0;
-    const minutes = parseInt(mStr?.slice(0, 2)) || 0;
-    
-    return `${hours}.${minutes.toString().padStart(2, '0')} hrs`;
+    if (strValue.includes(":")) return strValue;
+
+    // Fallback for decimal values
+    const decimal = parseFloat(strValue);
+    const h = Math.floor(decimal);
+    const m = Math.round((decimal - h) * 60);
+    return `${h}:${m.toString().padStart(2, '0')}`;
   };
 
   const handlePrint = () => {
