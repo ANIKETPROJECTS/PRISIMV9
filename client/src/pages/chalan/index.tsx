@@ -747,6 +747,7 @@ export default function ChalanPage() {
                       <Select 
                         onValueChange={field.onChange} 
                         value={field.value}
+                        disabled={!!selectedBookingId || !!editingChalan}
                       >
                         <FormControl>
                           <SelectTrigger data-testid="select-customer">
@@ -775,6 +776,7 @@ export default function ChalanPage() {
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
+                        disabled={!!selectedBookingId || !!editingChalan || !selectedCustomerId}
                       >
                         <FormControl>
                           <SelectTrigger data-testid="select-project">
