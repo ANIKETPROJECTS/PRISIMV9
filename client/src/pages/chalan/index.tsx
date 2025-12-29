@@ -511,7 +511,10 @@ export default function ChalanPage() {
       // Helper to format decimal DB values back to HH:mm for the form
       const decimalToHHMM = (val: string | number | null | undefined) => {
         if (!val) return "00:00";
-        const num = typeof val === 'string' ? parseFloat(val) : val;
+        const valStr = val.toString();
+        if (valStr.includes(":")) return valStr;
+        
+        const num = parseFloat(valStr);
         const h = Math.floor(num);
         const m = Math.round((num - h) * 60);
         return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
@@ -525,10 +528,10 @@ export default function ChalanPage() {
         notes: chalan.notes || "",
         editorId: chalan.editorId?.toString() || "",
         roomId: chalan.roomId?.toString() || "",
-        fromTime: chalan.fromTime?.slice(0, 5) || "",
-        toTime: chalan.toTime?.slice(0, 5) || "",
-        actualFromTime: chalan.actualFromTime?.slice(0, 5) || "",
-        actualToTime: chalan.actualToTime?.slice(0, 5) || "",
+        fromTime: chalan.fromTime || "",
+        toTime: chalan.toTime || "",
+        actualFromTime: chalan.actualFromTime || "",
+        actualToTime: chalan.actualToTime || "",
         breakHours: decimalToHHMM(chalan.breakHours),
         totalHours: decimalToHHMM(chalan.totalHours),
         items: chalan.items?.length ? chalan.items.map(item => ({
