@@ -106,7 +106,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
     return timeValue.substring(0, 5); // Return only "HH:MM"
   };
 
-  const form = useForm<BookingFormValues>({
+    const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
       roomId: booking?.roomId?.toString() || "",
@@ -119,7 +119,13 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
       toTime: formatTimeForInput(booking?.toTime) || "18:00",
       actualFromTime: formatTimeForInput(booking?.actualFromTime),
       actualToTime: formatTimeForInput(booking?.actualToTime),
-      breakHours: booking?.breakHours?.toString() || "0",
+      breakHours: (() => {
+        if (!booking?.breakHours) return "00:00";
+        const totalMinutes = parseFloat(booking.breakHours.toString()) * 60;
+        const h = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
+        const m = Math.round(totalMinutes % 60).toString().padStart(2, '0');
+        return `${h}:${m}`;
+      })(),
       status: (booking?.status as any) || "planning",
       notes: booking?.notes || "",
     },
@@ -137,26 +143,31 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
     enabled: !!selectedCustomerId,
   });
 
-  // Reset form when booking changes or dialog opens
-  useEffect(() => {
-    if (open) {
-      form.reset({
-        roomId: booking?.roomId?.toString() || "",
-        customerId: booking?.customerId?.toString() || "",
-        projectId: booking?.projectId?.toString() || "",
-        contactId: booking?.contactId?.toString() || "",
-        editorId: booking?.editorId?.toString() || "",
-        bookingDate: booking?.bookingDate || (defaultDate ? format(defaultDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")),
-        fromTime: formatTimeForInput(booking?.fromTime) || "09:00",
-        toTime: formatTimeForInput(booking?.toTime) || "18:00",
-        actualFromTime: formatTimeForInput(booking?.actualFromTime),
-        actualToTime: formatTimeForInput(booking?.actualToTime),
-        breakHours: booking?.breakHours?.toString() || "0",
-        status: (booking?.status as any) || "planning",
-        notes: booking?.notes || "",
-      });
-    }
-  }, [open, booking, defaultDate, form]);
+      useEffect(() => {
+        if (open) {
+          form.reset({
+            roomId: booking?.roomId?.toString() || "",
+            customerId: booking?.customerId?.toString() || "",
+            projectId: booking?.projectId?.toString() || "",
+            contactId: booking?.contactId?.toString() || "",
+            editorId: booking?.editorId?.toString() || "",
+            bookingDate: booking?.bookingDate || (defaultDate ? format(defaultDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")),
+            fromTime: formatTimeForInput(booking?.fromTime) || "09:00",
+            toTime: formatTimeForInput(booking?.toTime) || "18:00",
+            actualFromTime: formatTimeForInput(booking?.actualFromTime),
+            actualToTime: formatTimeForInput(booking?.actualToTime),
+            breakHours: (() => {
+              if (!booking?.breakHours) return "00:00";
+              const totalMinutes = parseFloat(booking.breakHours.toString()) * 60;
+              const h = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
+              const m = Math.round(totalMinutes % 60).toString().padStart(2, '0');
+              return `${h}:${m}`;
+            })(),
+            status: (booking?.status as any) || "planning",
+            notes: booking?.notes || "",
+          });
+        }
+      }, [open, booking, defaultDate, form]);
 
   // Watch for conflict-related fields
   const watchedRoomId = form.watch("roomId");
@@ -209,6 +220,10 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
 
   const createMutation = useMutation({
     mutationFn: async (data: BookingFormValues) => {
+      // Convert HH:mm to decimal numeric string for backend
+      const [h, m] = (data.breakHours || "00:00").split(":");
+      const decimalBreakHours = (parseInt(h || "0") + parseInt(m || "0") / 60).toFixed(2);
+      
       return apiRequest("POST", "/api/bookings", {
         roomId: parseInt(data.roomId),
         customerId: parseInt(data.customerId),
@@ -220,7 +235,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
         toTime: data.toTime,
         actualFromTime: data.actualFromTime || null,
         actualToTime: data.actualToTime || null,
-        breakHours: data.breakHours || "0",
+        breakHours: decimalBreakHours,
         status: data.status,
         notes: data.notes,
         repeatDays: data.repeatDays,
@@ -248,8 +263,10 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
 
   const updateMutation = useMutation({
     mutationFn: async (data: BookingFormValues) => {
-      // Convert breakHours from HH.mm to a format the server can parse if needed
-      // But we'll keep it as string for now and let the server handle it
+      // Convert HH:mm to decimal numeric string for backend
+      const [h, m] = (data.breakHours || "00:00").split(":");
+      const decimalBreakHours = (parseInt(h || "0") + parseInt(m || "0") / 60).toFixed(2);
+
       return apiRequest("PATCH", `/api/bookings/${booking?.id}`, {
         roomId: parseInt(data.roomId),
         customerId: parseInt(data.customerId),
@@ -261,7 +278,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
         toTime: data.toTime,
         actualFromTime: data.actualFromTime || null,
         actualToTime: data.actualToTime || null,
-        breakHours: data.breakHours || "0",
+        breakHours: decimalBreakHours,
         status: data.status,
         notes: data.notes,
       });
@@ -583,7 +600,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-48 p-0" align="start">
-                            <div className="flex h-48">
+                            <div className="flex h-48" onWheel={(e) => e.stopPropagation()}>
                               <ScrollArea className="flex-1 border-r">
                                 <div className="p-2">
                                   {Array.from({ length: 24 }).map((_, i) => {
@@ -595,7 +612,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                                         className={`w-full justify-center ${hours === h ? "bg-accent" : ""}`}
                                         onClick={() => field.onChange(`${h}:${minutes}`)}
                                       >
-                                        {h}
+                                        {h} hr
                                       </Button>
                                     );
                                   })}
@@ -612,7 +629,7 @@ export function BookingForm({ open, onOpenChange, booking, defaultDate, readOnly
                                         className={`w-full justify-center ${minutes === m ? "bg-accent" : ""}`}
                                         onClick={() => field.onChange(`${hours}:${m}`)}
                                       >
-                                        {m}
+                                        {m} min
                                       </Button>
                                     );
                                   })}
