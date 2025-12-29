@@ -993,7 +993,7 @@ export default function ChalanPage() {
                   <FormItem>
                     <FormLabel>Notes</FormLabel>
                     <FormControl>
-                      <Textarea data-testid="input-notes" {...field} disabled={true} />
+                      <Textarea data-testid="input-notes" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
