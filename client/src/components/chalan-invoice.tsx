@@ -196,7 +196,7 @@ export function ChalanInvoice({ chalan, onClose, showActions = true, viewOnly = 
                 {[
                   { label: "Customer Name", key: "customer-name", value: chalan.customer?.name },
                   { label: "Customer Signature", key: "customer-sig", value: null },
-                  { label: "Editor Name", key: "editor-name", value: chalan.booking?.editor?.name || chalan.editor?.name },
+                  { label: "Editor Name", key: "editor-name", value: chalan.editor?.name || chalan.booking?.editor?.name },
                   { label: "Editor Signature", key: "editor-sig", value: null },
                   { label: "Authority Signature", key: "authority-sig", value: null },
                 ].map((item) => (
