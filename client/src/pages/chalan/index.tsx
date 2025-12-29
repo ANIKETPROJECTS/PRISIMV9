@@ -437,12 +437,12 @@ export default function ChalanPage() {
     
     // Auto-fill all fields immediately
     form.setValue("customerId", booking.customerId.toString());
-    form.setValue("projectId", booking.projectId.toString());
+    form.setValue("projectId", booking.projectId.toString(), { shouldValidate: true, shouldDirty: true });
     form.setValue("chalanDate", booking.bookingDate);
     form.setValue("notes", booking.notes || "");
     form.setValue("roomId", booking.roomId.toString());
     if (booking.editorId) form.setValue("editorId", booking.editorId.toString());
-    
+
     // Auto-populate time fields from booking
     if (booking.fromTime) form.setValue("fromTime", booking.fromTime);
     if (booking.toTime) form.setValue("toTime", booking.toTime);
@@ -450,14 +450,14 @@ export default function ChalanPage() {
     form.setValue("actualToTime", booking.actualToTime || "");
     form.setValue("breakHours", booking.breakHours?.toString() || "");
     form.setValue("totalHours", booking.totalHours?.toString() || "");
-    
+
     const hours = Number(booking.totalHours) || 0;
     const roomName = booking.room?.name || "Room booking";
     const editorName = booking.editor?.name || "";
     const description = editorName 
       ? `${roomName} - ${editorName} (${hours} hrs)`
       : `${roomName} (${hours} hrs)`;
-    
+
     form.setValue("items", [{
       description,
       quantity: (hours > 0 ? hours : 1).toString(),
