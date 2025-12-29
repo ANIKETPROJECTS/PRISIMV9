@@ -487,46 +487,58 @@ export default function ChalanPage() {
     }]);
   };
 
-  const handleEditChalan = (chalan: ChalanWithItems) => {
-    if (!canEditChalans) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to edit chalans.",
-        variant: "destructive",
+    const handleEditChalan = (chalan: ChalanWithItems) => {
+      if (!canEditChalans) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to edit chalans.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (chalan.isCancelled) {
+        toast({
+          title: "Cannot edit cancelled chalan",
+          description: "Cancelled chalans are read-only and cannot be modified.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setEditingChalan(chalan);
+      setSelectedBookingId("");
+      
+      // Helper to format decimal DB values back to HH:mm for the form
+      const decimalToHHMM = (val: string | number | null | undefined) => {
+        if (!val) return "00:00";
+        const num = typeof val === 'string' ? parseFloat(val) : val;
+        const h = Math.floor(num);
+        const m = Math.round((num - h) * 60);
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      };
+
+      form.reset({
+        id: chalan.id,
+        customerId: chalan.customerId.toString(),
+        projectId: chalan.projectId?.toString() || "",
+        chalanDate: chalan.chalanDate,
+        notes: chalan.notes || "",
+        editorId: chalan.editorId?.toString() || "",
+        roomId: chalan.roomId?.toString() || "",
+        fromTime: chalan.fromTime?.slice(0, 5) || "",
+        toTime: chalan.toTime?.slice(0, 5) || "",
+        actualFromTime: chalan.actualFromTime?.slice(0, 5) || "",
+        actualToTime: chalan.actualToTime?.slice(0, 5) || "",
+        breakHours: decimalToHHMM(chalan.breakHours),
+        totalHours: decimalToHHMM(chalan.totalHours),
+        items: chalan.items?.length ? chalan.items.map(item => ({
+          description: item.description,
+          quantity: (item.quantity ?? "1").toString(),
+          rate: (item.rate ?? "0").toString(),
+        })) : [{ description: "", quantity: "1", rate: "0" }],
       });
-      return;
-    }
-    if (chalan.isCancelled) {
-      toast({
-        title: "Cannot edit cancelled chalan",
-        description: "Cancelled chalans are read-only and cannot be modified.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setEditingChalan(chalan);
-    setSelectedBookingId("");
-    form.reset({
-      customerId: chalan.customerId.toString(),
-      projectId: chalan.projectId.toString(),
-      chalanDate: chalan.chalanDate,
-      notes: chalan.notes || "",
-      editorId: chalan.editorId?.toString() || "",
-      roomId: chalan.roomId?.toString() || "",
-      fromTime: chalan.fromTime || "",
-      toTime: chalan.toTime || "",
-      actualFromTime: chalan.actualFromTime || "",
-      actualToTime: chalan.actualToTime || "",
-      breakHours: chalan.breakHours?.toString() || "",
-      totalHours: chalan.totalHours?.toString() || "",
-      items: chalan.items?.length ? chalan.items.map(item => ({
-        description: item.description,
-        quantity: (item.quantity ?? "1").toString(),
-        rate: (item.rate ?? "0").toString(),
-      })) : [{ description: "", quantity: "1", rate: "0" }],
-    });
-    setDialogOpen(true);
-  };
+      setDialogOpen(true);
+    };
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
