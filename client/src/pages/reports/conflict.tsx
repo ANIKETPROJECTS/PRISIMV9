@@ -238,34 +238,6 @@ function ConflictReportContent() {
               />
             ) : (
               <div className="space-y-4">
-                <Card className="p-4 mb-4 bg-muted/30">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Input
-                      placeholder="Filter Date..."
-                      value={columnFilters.date || ""}
-                      onChange={(e) => setColumnFilters(prev => ({ ...prev, date: e.target.value }))}
-                      className="h-8 text-sm"
-                    />
-                    <Input
-                      placeholder="Filter Room..."
-                      value={columnFilters.room || ""}
-                      onChange={(e) => setColumnFilters(prev => ({ ...prev, room: e.target.value }))}
-                      className="h-8 text-sm"
-                    />
-                    <Input
-                      placeholder="Filter Customer..."
-                      value={columnFilters.customer || ""}
-                      onChange={(e) => setColumnFilters(prev => ({ ...prev, customer: e.target.value }))}
-                      className="h-8 text-sm"
-                    />
-                    <Input
-                      placeholder="Filter Project..."
-                      value={columnFilters.project || ""}
-                      onChange={(e) => setColumnFilters(prev => ({ ...prev, project: e.target.value }))}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                </Card>
                 {filteredConflicts
                   .map((conflict, index) => (
                   <Card key={index} className="border-l-4 border-l-destructive">
