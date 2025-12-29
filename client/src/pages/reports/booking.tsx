@@ -127,12 +127,7 @@ function BookingReportContent() {
       key: "room",
       header: "Room",
       sortable: true,
-      cell: (row) => (
-        <div className="flex items-center gap-1">
-          <Building className="h-3 w-3 text-muted-foreground" />
-          {row.room?.name || "-"}
-        </div>
-      ),
+      cell: (row) => row.room?.name || "-",
     },
     {
       key: "time",
