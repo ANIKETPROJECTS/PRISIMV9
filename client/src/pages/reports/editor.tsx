@@ -154,15 +154,6 @@ function EditorReportContent() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-xl font-bold">{totalHours}</p>
-                    <p className="text-xs text-muted-foreground">Total Hours</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
                     <Film className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
@@ -214,10 +205,6 @@ function EditorReportContent() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <Badge variant="outline">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {report.totalHours} hours
-                          </Badge>
                           <Badge variant="outline">
                             <Film className="h-3 w-3 mr-1" />
                             {report.projectCount} projects
