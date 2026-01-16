@@ -797,7 +797,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/bookings", requirePermission("booking", "canCreate"), async (req, res) => {
+  app.post("/api/bookings", requirePermission("booking", "canCreate"), async (req: AuthenticatedRequest, res) => {
     try {
       const { repeatDays, ...bookingData } = req.body;
       const data = insertBookingSchema.parse(bookingData);
@@ -812,7 +812,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
           ...data,
           bookingDate: date.toISOString().split("T")[0],
           totalHours: calculateTotalHours(data.actualFromTime || data.fromTime, data.actualToTime || data.toTime, data.breakHours)
-        });
+        }, req.userId);
         bookings.push(booking);
       }
       
@@ -822,7 +822,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.patch("/api/bookings/:id", requirePermission("booking", "canEdit"), async (req, res) => {
+  app.patch("/api/bookings/:id", requirePermission("booking", "canEdit"), async (req: AuthenticatedRequest, res) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -845,7 +845,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
         ...req.body,
         totalHours: calculateTotalHours(req.body.actualFromTime || req.body.fromTime, req.body.actualToTime || req.body.toTime, req.body.breakHours)
       };
-      const booking = await storage.updateBooking(id, bookingData);
+      const booking = await storage.updateBooking(id, bookingData, req.userId);
       if (!booking) {
         return res.status(404).json({ message: "Booking not found" });
       }
@@ -855,14 +855,14 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     }
   });
 
-  app.post("/api/bookings/:id/cancel", requirePermission("booking", "canDelete"), async (req, res) => {
+  app.post("/api/bookings/:id/cancel", requirePermission("booking", "canDelete"), async (req: AuthenticatedRequest, res) => {
     try {
       const id = parseInt(req.params.id);
       const { reason } = req.body;
       if (!reason) {
         return res.status(400).json({ message: "Reason is required" });
       }
-      const booking = await storage.cancelBooking(id, reason);
+      const booking = await storage.cancelBooking(id, reason, req.userId);
       if (!booking) {
         return res.status(404).json({ message: "Booking not found" });
       }
