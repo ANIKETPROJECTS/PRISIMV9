@@ -596,11 +596,15 @@ export class DatabaseStorage implements IStorage {
       totalHours,
     }).returning();
     
+    // Fetch user and other info for detailed log
+    const [user] = userId ? await db.select().from(users).where(eq(users.id, userId)) : [null];
+    const [room] = await db.select().from(rooms).where(eq(rooms.id, booking.roomId));
+    
     await db.insert(bookingLogs).values({
       bookingId: created.id,
       userId: userId || null,
       action: "Created",
-      changes: `Booking created for ${booking.bookingDate}`,
+      changes: `Booking created by ${user?.fullName || user?.username || "System"} for ${booking.bookingDate} in ${room?.name || "Room"}.`,
     });
     
     return created;
@@ -621,6 +625,14 @@ export class DatabaseStorage implements IStorage {
     if (existing.status === "cancelled") {
       throw new Error("Cannot update a cancelled booking");
     }
+    
+    // Track changes
+    const changeLogs: string[] = [];
+    if (booking.roomId && booking.roomId !== existing.roomId) changeLogs.push(`Room changed`);
+    if (booking.bookingDate && booking.bookingDate !== existing.bookingDate) changeLogs.push(`Date changed to ${booking.bookingDate}`);
+    if (booking.fromTime && booking.fromTime !== existing.fromTime) changeLogs.push(`Start time: ${booking.fromTime}`);
+    if (booking.toTime && booking.toTime !== existing.toTime) changeLogs.push(`End time: ${booking.toTime}`);
+    if (booking.status && booking.status !== existing.status) changeLogs.push(`Status: ${booking.status}`);
     
     // Calculate billing hours if any time-related fields are being updated
     let totalHours: number | undefined;
@@ -648,11 +660,12 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     if (updated) {
+      const [user] = userId ? await db.select().from(users).where(eq(users.id, userId)) : [null];
       await db.insert(bookingLogs).values({
         bookingId: id,
         userId: userId || null,
         action: "Updated",
-        changes: `Booking updated`,
+        changes: `Updated by ${user?.fullName || user?.username || "System"}. ${changeLogs.join(", ") || "Details modified"}.`,
       });
     }
     
@@ -724,12 +737,18 @@ export class DatabaseStorage implements IStorage {
     return true;
   }
 
-  async getBookingLogs(bookingId: number): Promise<BookingLog[]> {
-    return db
+  async getBookingLogs(bookingId: number): Promise<any[]> {
+    const result = await db
       .select()
       .from(bookingLogs)
+      .leftJoin(users, eq(bookingLogs.userId, users.id))
       .where(eq(bookingLogs.bookingId, bookingId))
       .orderBy(asc(bookingLogs.createdAt));
+
+    return result.map(r => ({
+      ...r.booking_logs,
+      user: r.users || undefined,
+    }));
   }
 
   async checkBookingConflicts(booking: { roomId: number; editorId?: number; bookingDate: string; fromTime: string; toTime: string; excludeBookingId?: number }): Promise<{ hasConflict: boolean; conflicts: any[]; editorOnLeave: boolean; leaveInfo?: any }> {
