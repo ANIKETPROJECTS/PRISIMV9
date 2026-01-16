@@ -114,6 +114,7 @@ export function BookingCard({
                       e.stopPropagation();
                       onViewLogs?.(booking);
                     }}
+                    className="cursor-pointer"
                     data-testid={`booking-logs-${booking.id}`}
                   >
                     <FileText className="h-4 w-4 mr-2" />

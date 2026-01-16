@@ -712,11 +712,12 @@ export class DatabaseStorage implements IStorage {
         });
       }
 
+      const [user] = userId ? await db.select().from(users).where(eq(users.id, userId)) : [null];
       await db.insert(bookingLogs).values({
         bookingId: id,
         userId: userId || null,
         action: "Cancelled",
-        changes: `Reason: ${reason}${chalan ? ". Associated chalan automatically deleted." : ""}`,
+        changes: `Cancelled by ${user?.fullName || user?.username || "System"}. Reason: ${reason}${chalan ? ". Associated chalan automatically deleted." : ""}`,
       });
     }
     
