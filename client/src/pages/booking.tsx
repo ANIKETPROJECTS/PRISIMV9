@@ -607,7 +607,7 @@ function BookingContent() {
                       </span>
                     </div>
                     {log.changes && (
-                      <p className="text-muted-foreground text-xs leading-relaxed">{log.changes}</p>
+                      <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-line">{log.changes}</p>
                     )}
                   </div>
                 ))

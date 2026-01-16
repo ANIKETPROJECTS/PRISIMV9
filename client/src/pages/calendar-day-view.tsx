@@ -729,7 +729,7 @@ export default function CalendarDayView() {
                       </span>
                     </div>
                     {log.changes && (
-                      <p className="text-muted-foreground leading-relaxed">{log.changes}</p>
+                      <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{log.changes}</p>
                     )}
                   </div>
                 ))

@@ -628,12 +628,14 @@ export class DatabaseStorage implements IStorage {
     
     // Track changes
     const changeLogs: string[] = [];
-    if (booking.roomId && booking.roomId !== existing.roomId) {
+    if (booking.roomId !== undefined && booking.roomId !== existing.roomId) {
       const [room] = await db.select().from(rooms).where(eq(rooms.id, booking.roomId));
       changeLogs.push(`Room: ${room?.name || booking.roomId}`);
     }
-    if (booking.bookingDate && booking.bookingDate !== existing.bookingDate) changeLogs.push(`Date: ${booking.bookingDate}`);
-    if (booking.status && booking.status !== existing.status) changeLogs.push(`Status: ${booking.status}`);
+    if (booking.bookingDate !== undefined && booking.bookingDate !== existing.bookingDate) changeLogs.push(`Date: ${booking.bookingDate}`);
+    if (booking.fromTime !== undefined && booking.fromTime !== existing.fromTime) changeLogs.push(`Start time: ${booking.fromTime}`);
+    if (booking.toTime !== undefined && booking.toTime !== existing.toTime) changeLogs.push(`End time: ${booking.toTime}`);
+    if (booking.status !== undefined && booking.status !== existing.status) changeLogs.push(`Status: ${booking.status}`);
     if (booking.editorId !== undefined && booking.editorId !== existing.editorId) {
       if (booking.editorId === null) {
         changeLogs.push(`Editor: Removed`);
@@ -642,17 +644,17 @@ export class DatabaseStorage implements IStorage {
         changeLogs.push(`Editor: ${editor?.name || booking.editorId}`);
       }
     }
-    if (booking.notes !== undefined && booking.notes !== existing.notes) changeLogs.push(`Notes: ${booking.notes || "None"}`);
+    if (booking.notes !== undefined && (booking.notes || "") !== (existing.notes || "")) changeLogs.push(`Notes: ${booking.notes || "None"}`);
     if (booking.actualFromTime !== undefined && booking.actualFromTime !== existing.actualFromTime) changeLogs.push(`Actual Start: ${booking.actualFromTime?.slice(0, 5) || "None"}`);
     if (booking.actualToTime !== undefined && booking.actualToTime !== existing.actualToTime) changeLogs.push(`Actual End: ${booking.actualToTime?.slice(0, 5) || "None"}`);
     if (booking.breakHours !== undefined && booking.breakHours !== existing.breakHours) changeLogs.push(`Break: ${booking.breakHours}h`);
     
     // Check for customer/project changes
-    if (booking.customerId && booking.customerId !== existing.customerId) {
+    if (booking.customerId !== undefined && booking.customerId !== existing.customerId) {
       const [customer] = await db.select().from(customers).where(eq(customers.id, booking.customerId));
       changeLogs.push(`Customer: ${customer?.name || booking.customerId}`);
     }
-    if (booking.projectId && booking.projectId !== existing.projectId) {
+    if (booking.projectId !== undefined && booking.projectId !== existing.projectId) {
       const [project] = await db.select().from(projects).where(eq(projects.id, booking.projectId));
       changeLogs.push(`Project: ${project?.name || booking.projectId}`);
     }
