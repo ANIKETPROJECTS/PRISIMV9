@@ -152,46 +152,161 @@ Once the database is ready, proceed with the application installation:
 #### 3.1 THE SCHEDULING HUB (BOOKING SYSTEM)
 The Booking system is the most complex component of PRISM, designed to handle the high-velocity scheduling needs of a post-production studio.
 
-**Core Workflow**:
-1.  **Request Initiation**: A booking begins with the selection of a Date, Room, and Project.
+**Detailed Workflow & Logic**:
+1.  **Request Initiation**: A booking begins with the selection of a Date, Room, and Project. The interface utilizes a high-density calendar to prevent data entry errors.
 2.  **Resource Allocation**: The user assigns an Editor to the session. The system pulls only "Active" editors from the Master roster.
 3.  **Temporal Definition**: Start and End times are defined. PRISM supports 24-hour operations, handling overnight sessions correctly in duration calculations.
 4.  **Conflict Validation (The Engine)**:
     Before a booking is saved, the `checkBookingConflicts` method in `server/storage.ts` performs a multi-point inspection:
-    - **Room Conflict**: Checks if the selected room is already occupied during the requested interval.
+    - **Room Conflict**: Checks if the selected room is already occupied during the requested interval. This involves an overlapping time interval query: `(start1 < end2) AND (end1 > start2)`.
     - **Editor Conflict**: Checks if the assigned editor is already scheduled in another room.
     - **Leave Check**: Interrogates the `editor_leaves` table to ensure the editor isn't on vacation or sick leave.
-    - **Override Mechanism**: Certain "Super-User" roles can check an "Ignore Conflict" flag for specialized overlapping sessions.
-5.  **Persistence & Audit**: Upon successful validation, the record is saved to the `bookings` table, and an entry is automatically generated in `booking_logs` detailing the creation event.
+    - **Override Mechanism**: Certain "Super-User" roles can check an "Ignore Conflict" flag for specialized overlapping sessions or administrative adjustments.
+5.  **Status Transitions**: 
+    - **Planning**: Initial draft state.
+    - **Tentative**: Room held but client hasn't confirmed.
+    - **Confirmed**: Firm schedule; blocks all conflicting resources.
+    - **Cancelled**: Frees up resources while maintaining the record for cancellation reports.
+6.  **Persistence & Audit**: Upon successful validation, the record is saved to the `bookings` table, and an entry is automatically generated in `booking_logs` detailing the creation event, the user ID, and the initial state.
 
 #### 3.2 CHALAN (BILLING) GENERATION & MANAGEMENT
-PRISM transforms operational data into financial documents through the Chalan module.
+PRISM transforms operational data into financial documents through the Chalan module. This bridge ensures that every billable minute in the studio is captured and accounted for.
 
 **The Chalan Lifecycle**:
-- **Drafting**: Users select one or more completed bookings to include in a Chalan. The system automatically calculates "Total Billable Hours" by subtracting "Break Hours" from the total session duration.
-- **Itemization**: Every Chalan can have multiple line items. The system pulls rates from a pre-configured Master list or allows manual entry for specialized services.
+- **Drafting & Aggregation**: Users select one or more completed bookings to include in a Chalan. The system provides an "Aggregate" view where multiple sessions for the same project can be billed in a single document.
+- **Hour Calculation Logic**: The system automatically calculates "Total Billable Hours" by:
+    - Determining the gross duration (To Time - From Time).
+    - Subtracting "Break Hours" (stored as decimal hours or HH:mm).
+    - Applying "Actual" times if they differ from "Booked" times.
+- **Itemization & Rates**: Every Chalan can have multiple line items. The system allows for:
+    - Primary service billing (e.g., "Color Grading - Session").
+    - Ancillary charges (e.g., "Hard Drive Backup", "Courier").
+    - Manual rate overrides for special client agreements.
 - **Document Revisioning**:
-    Post-production chalans are frequently revised. PRISM handles this through a dedicated `chalan_revisions` table. When a chalan is edited:
-    1.  A snapshot of the current state is taken.
-    2.  The `is_revised` flag is set to true on the main record.
-    3.  A version-stamped entry is saved to the revision history.
-- **Cancellation Protocol**: Chalans cannot be "deleted" in the traditional sense once generated. They must be "Cancelled" with a mandatory reason. This ensures a complete audit trail for financial compliance.
+    Post-production chalans are frequently revised due to change requests. PRISM handles this through a dedicated `chalan_revisions` table. When a chalan is edited:
+    1.  A snapshot of the current state is stored.
+    2.  The `is_revised` flag is set to true.
+    3.  The `revisionNumber` is incremented.
+    4.  A detailed log of "Old Value vs. New Value" is created for audit purposes.
+- **Cancellation Protocol**: For audit integrity, chalans cannot be deleted. They must be "Cancelled" with a mandatory reason. This ensures that the Chalan Number sequence remains traceable and no billing data "disappears" without a record.
+
+#### 3.3 EDITOR LEAVE & AVAILABILITY
+Leaves are more than just notes; they are functional barriers in the scheduling engine.
+- **Validation during Entry**: When a leave is added, the system checks if that editor already has bookings during that period and warns the administrator.
+- **Calendar Integration**: Leaves are visually represented on the main operation calendar, allowing managers to see at a glance who is unavailable.
 
 ### 4. MASTERS MODULE: DATA MANAGEMENT & RELATIONSHIPS
 
 #### 4.1 CUSTOMER & CONTACT HIERARCHY
-The `customers` table is the root of the financial hierarchy.
-- **Multi-Contact Support**: Each customer can have an unlimited number of contacts (Producers, Accountants, etc.) stored in the `customer_contacts` table.
-- **Primary Contacts**: A specific contact can be designated as "Primary," ensuring they are the default recipient for chalans and booking notifications.
+The `customers` table is the root of the financial and relationship hierarchy. 
 
-#### 4.2 PROJECT TRACKING
-Projects are scoped per customer. 
-- **Type Specialization**: Projects are categorized as Movies, Serials, Web Series, etc., allowing for segmented reporting.
-- **Lifecycle Status**: Projects can be marked as "Inactive" once completed, hiding them from the active Booking dropdowns while preserving historical data.
+- **Organization Profiles**: Stores GST numbers (essential for Indian tax compliance), addresses, and PAN details.
+- **Multi-Contact Management**: 
+    - Links to `customer_contacts`.
+    - Stores Name, Phone, Email, and Designation (Producer, Accountant, etc.).
+    - **Primary Flag**: Determines which contact is the default recipient for financial documents.
+- **Relational Integrity**: Customers cannot be deleted if they have active bookings or chalans, preventing orphaned data records.
+
+#### 4.2 PROJECT LIFE CYCLE
+Projects are scoped per customer, creating a clean organizational structure.
+- **Project Types**: Movie, Serial, Web Series, Ad, Teaser, Trilogy. These enums ensure standardized reporting across different production sectors.
+- **Tracking Flags**: `hasChalanCreated` and `hasInvoiceCreated` provide quick status indicators in the Project Master list.
+- **Inactivity Logic**: Completed projects are marked as `isActive = false`, which removes them from the "New Booking" dropdown while preserving all historical billing and scheduling data.
 
 #### 4.3 RESOURCE MASTERS (ROOMS & EDITORS)
-- **Room Specifications**: Rooms are categorized by their technical capability (e.g., Mixing, DI, VFX). This categorization is used in the Reporting module to analyze which studio assets are most profitable.
-- **Editor Profiles**: Beyond basic contact info, the Editor Master tracks specializations. The system uses this data to suggest appropriate editors for specific room types during the booking process.
+- **Room Specifications**: 
+    - Categorized by type: Sound, Music, VFX, Client Office, Editing, Dubbing, Mixing.
+    - Capacity tracking for seating/workstation management.
+    - "Ignore Conflict" default setting for specific rooms that allow concurrent sessions.
+- **Editor Profiles**: 
+    - Specialized skill tracking (Video, Audio, VFX, Colorist, DI).
+    - Contact info and tenure tracking (Join/Leave dates).
+    - Integrated utilization history linking back to `bookings`.
+
+### 5. REPORTS & ANALYTICAL INTELLIGENCE
+
+#### 5.1 CONFLICT ANALYSIS REPORT
+A proactive tool for studio managers to identify scheduling overlaps. 
+- **Time Window Filtering**: View conflicts for today, this week, or custom ranges.
+- **Resolution Path**: Direct links from the conflict report to the offending bookings for immediate adjustment.
+
+#### 5.2 BOOKING & UTILIZATION REPORTS
+- **Editor Utilization**: Shows billable hours vs. idle time per editor, crucial for resource planning.
+- **Room Occupancy**: Visualizes which rooms are under-performing or reaching capacity.
+- **Export Capabilities**: All reports utilize the `xlsx` library to generate native Excel files, allowing for advanced secondary analysis.
+
+#### 5.3 CHALAN & FINANCIAL REPORTS
+- **Revenue Summary**: Total billing per client/project.
+- **Cancelled Chalan Audit**: Tracking lost revenue or billing errors.
+- **Revised Chalan Audit**: Monitoring the frequency of billing adjustments.
+
+### 6. SECURITY, PERMISSIONS & AUDIT LOGGING
+
+#### 6.1 AUTHENTICATION ARCHITECTURE
+- **PIN-Based Security**: Users authenticate using a Username + Security PIN. This provides a balance between security and the high-speed requirements of a studio floor.
+- **Session Store**: Uses `connect-pg-simple` to store sessions directly in PostgreSQL. This ensures that users remain logged in even if the backend process restarts (e.g., during a deployment).
+- **Sensitive Data Isolation**: The `users` table contains `password` and `securityPin`, but these fields are strictly filtered out in all API responses using TypeScript `omit` and manual sanitization.
+
+#### 6.2 GRANULAR PERMISSION MODEL (RBAC)
+PRISM implements a complex Role-Based Access Control system:
+- **Default Roles**:
+    - **Admin**: Full system access.
+    - **GST**: Full Master access, Booking access, but restricted Chalan access.
+    - **Non-GST**: Operation-focused; cannot view or edit financial data.
+    - **Account**: Focus on Chalans and Reports; restricted Masters access.
+- **Custom Role & The Permission Matrix**:
+    - For the "Custom" role, administrators can toggle View, Create, Edit, and Delete permissions for every single module independently.
+    - This is handled by the `user_module_access` table and enforced by the `requirePermission` middleware on the backend.
+
+#### 6.3 AUDIT TRAIL & HISTORY
+Transparency is a core feature of PRISM.
+- **`booking_logs`**: Every change to a booking creates a permanent record: `Action`, `Changes` (JSON-stringified old vs new values), `User`, and `Timestamp`.
+- **System History**: A global history view that aggregates logs from across the system, providing a "Timeline" of studio activity.
+
+### 7. API DOCUMENTATION & DATABASE SCHEMA
+
+#### 7.1 CORE API ENDPOINTS
+- **Auth**: `/api/auth/login`, `/api/auth/logout`, `/api/auth/session`.
+- **Operations**: `/api/bookings`, `/api/bookings/check-conflicts`, `/api/bookings/:id/cancel`, `/api/chalans`, `/api/chalans/:id/revisions`.
+- **Masters**: `/api/customers`, `/api/projects`, `/api/rooms`, `/api/editors`.
+- **Admin**: `/api/users`, `/api/users/:id/access`, `/api/admin/companies`.
+
+#### 7.2 DATABASE SCHEMA (DRIZZLE ORM)
+The schema utilizes PostgreSQL's advanced features:
+- **Generated Identity Columns**: For all Primary Keys.
+- **Native Enums**: For roles, project types, room types, and booking statuses.
+- **Foreign Key Constraints**: With `references()` and `onDelete()` logic to ensure relational integrity.
+- **Numeric Types**: For accurate financial and time duration calculations.
+
+### 8. FRONTEND DESIGN SYSTEM & GUIDELINES
+
+#### 8.1 DESIGN PHILOSOPHY
+The PRISM UI is designed for high-density information management without overwhelming the user.
+- **Consistent Grid**: 8px based spacing for all padding and margins.
+- **Interactive Feedback**: 
+    - `hover-elevate`: Subtle 3D-like lift on hover.
+    - `active-elevate-2`: Distinct press-down effect for buttons.
+- **Color Palette**: Utilizes a semantic theme (Primary, Secondary, Accent) that automatically adjusts for Light/Dark modes.
+
+#### 8.2 COMPONENT ARCHITECTURE
+- **`DataTable`**: A high-performance, reusable grid with built-in sorting, filtering, and pagination.
+- **`PermissionGuard`**: A wrapper component that conditionally renders UI elements based on the current user's rights.
+- **`BookingForm`**: A stateful, complex form that handles real-time conflict checking via debounced API calls.
+
+### 9. MAINTENANCE & SCALING
+
+#### 9.1 DATABASE BACKUPS
+Regular backups of the `prism_production` database should be performed using `pg_dump`:
+```bash
+pg_dump -U prism_service_user prism_production > backup_$(date +%Y%m%d).sql
+```
+
+#### 9.2 SYSTEM UPDATES
+To update the system with new code:
+1. `git pull`
+2. `npm install`
+3. `npm run build`
+4. `pm2 restart prism-production`
 
 ---
-*(End of Section 4 - Sections 5-8 Continued in Next Part)*
+*This document serves as the authoritative guide for the PRISM Post-Production Management System. All code modifications should adhere to the architectural patterns defined herein.*
