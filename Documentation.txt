@@ -1,0 +1,100 @@
+# PRISM - Post-Production Management System
+
+A comprehensive studio management software designed for post-production houses to manage operations, masters, reports, and administrative utilities.
+
+## 1. Installation Process
+
+### Prerequisites
+- Node.js (v20 or higher)
+- PostgreSQL (v14 or higher)
+- npm or yarn
+
+### Server Setup
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd prism-system
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Database Configuration**:
+   Create a `.env` file in the root directory and add your PostgreSQL connection string:
+   ```env
+   DATABASE_URL=postgres://username:password@localhost:5432/prism_db
+   ```
+
+4. **Initialize Database**:
+   Push the schema to your PostgreSQL instance using Drizzle ORM:
+   ```bash
+   npm run db:push
+   ```
+
+5. **Build the Project**:
+   ```bash
+   npm run build
+   ```
+
+6. **Run the Server**:
+   ```bash
+   npm start
+   ```
+   The application will be available at `http://localhost:5000`.
+
+## 2. Project Features
+
+### Operations
+- **Booking Management**: Centralized calendar for scheduling rooms and editors with real-time conflict detection.
+- **Leave Entry**: Track editor availability and planned absences.
+- **Chalan Management**: Generate, revise, and cancel billing documents (chalans) based on project bookings.
+
+### Masters
+- **Customer Management**: Maintain a database of clients and their primary contacts.
+- **Project Management**: Track movies, serials, ads, and other project types.
+- **Room Management**: Configure studio rooms (Sound, VFX, Editing, etc.) with capacity and conflict rules.
+- **Editor Management**: Manage a roster of internal and external editors across various specializations.
+
+### Reports
+- **Conflict Reports**: Identify scheduling overlaps for rooms or editors.
+- **Booking Reports**: Export detailed booking logs for specific periods.
+- **Utilization Reports**: Analyze editor and room usage efficiency.
+- **Chalan Reports**: Summary of billing activities and financial status.
+
+### Utility
+- **User Management**: Create and manage system users.
+- **Permissions**: Granular role-based access control (RBAC) to restrict access to specific modules or actions (Create, Edit, Delete).
+
+## 3. Code Structure
+
+The project follows a modern full-stack JavaScript architecture:
+
+- **`/client`**: React-based frontend using Vite.
+  - **`/src/pages`**: Individual page components for each module.
+  - **`/src/components`**: Reusable UI components (Data Tables, Forms, Modals).
+  - **`/src/lib`**: Utility functions, API clients, and permission logic.
+- **`/server`**: Express.js backend.
+  - **`routes.ts`**: API endpoint definitions.
+  - **`storage.ts`**: Data access layer.
+  - **`db.ts`**: Database connection configuration.
+- **`/shared`**: Shared TypeScript types and Zod validation schemas.
+  - **`schema.ts`**: Drizzle ORM database schema definition.
+
+## 4. Database Explanation
+
+The system uses PostgreSQL with Drizzle ORM for type-safe database interactions.
+
+### Key Tables
+- **`users`**: System credentials, roles, and profile information.
+- **`companies`**: Organization-level data for multi-tenant support.
+- **`customers` & `customer_contacts`**: Client records and their associated representatives.
+- **`projects`**: Specific assignments linked to customers.
+- **`rooms`**: Physical or virtual spaces where work is performed.
+- **`editors`**: Personnel assigned to work on projects.
+- **`bookings`**: The central transactional table linking rooms, editors, projects, and time slots.
+- **`chalans` & `chalan_items`**: Billing records and detailed line items for invoicing.
+- **`user_module_access`**: Stores permission mappings for role-based access.
+
+The database utilizes Foreign Key constraints to ensure data integrity and uses PostgreSQL Enums for standardized status and type tracking.
