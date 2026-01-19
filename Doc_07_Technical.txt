@@ -1,57 +1,57 @@
 # 7. PRISM: Technical Specification & API Reference
-## Developer & Integration Manual
+## Developer, Integration & API Reference Manual
 
-### 7.1 The PRISM Developer Core
-This document serves as the technical reference for developers maintaining or extending the PRISM system. It details the internal data structures, API contracts, and the "Middleware Pipeline" that powers the application.
+### 7.1 The PRISM Developer Core: Engineering Excellence
+This document serves as the authoritative technical reference for senior engineers, DevOps professionals, and developers maintaining or extending the PRISM system. It details the internal data structures, API contracts, and the sophisticated "Middleware Pipeline" that ensures the application's stability and speed.
 
-### 7.2 Database Schema Reference (The Source of Truth)
-The schema is implemented using Drizzle ORM and is strictly typed.
+### 7.2 Database Schema Reference: The Relational Source of Truth
+PRISM's data layer is implemented using **Drizzle ORM** over PostgreSQL. The schema is strictly typed, ensuring that "Runtime Errors" related to data structure are virtually non-existent.
 
-#### A. Core Relational Tables
-- **`users`**: The authentication anchor. Stores roles and hashed PINs.
-- **`bookings`**: The central transactional table. Links rooms, editors, and projects.
-- **`chalans` & `chalan_items`**: The financial documents. Uses decimal/numeric types for precision billing.
-- **`user_module_access`**: The permission mapping table for Custom RBAC.
+#### 7.2.1 Core Relational Table Definitions
+- **`users`**: The security anchor. Stores hashed credentials, roles, and status flags.
+- **`bookings`**: The central transactional hub. A complex table linking Room IDs, Editor IDs, and Project IDs with millisecond-accurate timestamps.
+- **`chalans` & `chalan_items`**: The financial core. Uses `numeric` and `decimal` database types to ensure zero rounding errors in billing calculations.
+- **`user_module_access`**: The bridge table for the RBAC system, mapping user IDs to specific module permissions.
 
-#### B. Native PostgreSQL Enums
-To ensure data consistency at the database level, PRISM uses native enums:
-- `userRoleEnum`: ["admin", "gst", "non_gst", "account", "custom"]
-- `projectTypeEnum`: ["movie", "serial", "web_series", "ad", "teaser", "trilogy"]
-- `bookingStatusEnum`: ["planning", "tentative", "confirmed", "cancelled"]
+#### 7.2.2 Native Database Consistency (Enums)
+PRISM leverages PostgreSQL's native `ENUM` types to enforce data quality at the lowest level:
+- `userRoleEnum`: Hard-coded roles: ["admin", "gst", "non_gst", "account", "custom"].
+- `projectTypeEnum`: Industry types: ["movie", "serial", "web_series", "ad", "teaser", "trilogy"].
+- `bookingStatusEnum`: Workflow states: ["planning", "tentative", "confirmed", "cancelled"].
 
-### 7.3 API Endpoint Contract
-All API communication is handled via JSON over REST.
+### 7.3 API Endpoint Architecture and Contracts
+The PRISM API is a standardized RESTful interface communicating entirely via JSON.
 
-#### A. Authentication Endpoints
-- `POST /api/auth/login`: Handled by `passport-local`. Sets the session cookie.
-- `GET /api/auth/session`: Returns the current user's profile and permissions.
+#### 7.3.1 Authentication & Session Endpoints
+- `POST /api/auth/login`: The entry point. Validates credentials and sets the `connect.sid` cookie.
+- `GET /api/auth/session`: The "Who Am I" endpoint. Returns the user's role, permissions, and company context.
 
-#### B. Operational Endpoints
-- `GET /api/bookings`: Supports filters like `from`, `to`, `roomId`, and `status`.
-- `POST /api/bookings/check-conflicts`: A pre-flight validation endpoint used by the UI during scheduling.
-- `PATCH /api/bookings/:id`: Handles status transitions and actual time entry.
+#### 7.3.2 Operational Transactional Endpoints
+- `GET /api/bookings`: The calendar data source. Supports complex query params: `from`, `to`, `roomId`, `customerId`, and `status`.
+- `POST /api/bookings/check-conflicts`: A high-performance validation endpoint used for real-time UI feedback during scheduling.
+- `PATCH /api/bookings/:id`: Handles state transitions and the ingestion of "Actual Session Times."
 
-#### C. Master Data Endpoints
-- `GET /api/customers`, `GET /api/projects`, `GET /api/rooms`, `GET /api/editors`: All support standard CRUD operations with role-based restrictions.
+#### 7.3.3 Master Data CRUD Endpoints
+- `GET /api/customers`, `GET /api/projects`, `GET /api/rooms`, `GET /api/editors`: These follow a standardized CRUD pattern with built-in permission guards.
 
-### 7.4 The Backend Pipeline
-Every API request follows a deterministic 5-step lifecycle:
+### 7.4 The Backend Execution Pipeline
+Every request to the PRISM API follows a deterministic, 5-step lifecycle:
 
-1.  **Session Extraction**: The `authMiddleware` extracts the user ID from the encrypted cookie.
-2.  **User Verification**: The system checks if the user is still active in the database.
-3.  **Permission Guard**: The `requirePermission` middleware checks the user's rights for the target module.
-4.  **Schema Validation**: The request body is parsed through a **Zod** schema. If validation fails, a `400 Bad Request` is returned with detailed field errors.
-5.  **Storage Execution**: The business logic is executed in `server/storage.ts`, interacting with the database through Drizzle.
+1.  **Session Extraction**: The `authMiddleware` decodes the encrypted session cookie and extracts the user context.
+2.  **Identity Verification**: The system verifies the user exists and is still marked as `isActive`.
+3.  **Permission Authorization**: The `requirePermission` middleware checks the User's RBAC matrix against the target module and requested action.
+4.  **Schema Validation (Zod)**: The request payload is parsed against a strict Zod schema. Invalid requests are rejected with a detailed `400 Bad Request` and field-level error messages.
+5.  **Storage Isolation**: The logic is executed in the `storage.ts` layer, which abstracts the database complexity away from the route handlers.
 
-### 7.5 State Synchronization (Frontend)
-The frontend uses **TanStack Query** to manage server state.
-- **Query Keys**: Standardized keys (e.g., `["/api/bookings"]`) are used for automatic cache invalidation.
-- **Mutations**: Every "POST/PATCH" request automatically invalidates relevant query keys, ensuring the UI (especially the calendar) is always accurate across multiple open browsers.
+### 7.5 State Synchronization and Cache Logic
+The frontend leverages **TanStack Query** for industry-leading state management.
+- **Query Keys**: Standardized array-based keys (e.g., `["/api/bookings", dateRange]`) ensure that the calendar only fetches what it needs.
+- **Automatic Invalidation**: Every write operation (POST/PATCH/DELETE) triggers an automatic background refresh of the relevant query keys, ensuring that if a manager in Room A cancels a booking, the manager in Room B sees the change instantly.
 
-### 7.6 Advanced Technical Topics
-- **Relational Integrity**: How the `storage.ts` layer handles complex joins across 5+ tables.
-- **Session Lifecycle**: Cookie expiration policies and CSRF protection measures.
-- **Error Propagation**: Standardized JSON error response format across the entire API.
+### 7.6 Advanced Technical Infrastructure
+- **Relational Integrity via Drizzle**: How the system handles complex JOINs across 5+ tables while maintaining sub-100ms response times.
+- **Error Propagation Pattern**: Standardized JSON error response format: `{ "message": "Descriptive error", "errors": [...] }`.
+- **CORS and CSRF Protection**: Strict origin policies and signed cookies ensure the API is only accessible to authorized clients.
 
 ---
 *End of Document 7 - Technical Specification*

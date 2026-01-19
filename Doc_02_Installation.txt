@@ -1,5 +1,5 @@
 # 2. PRISM: Installation & Environment Configuration
-## Comprehensive Deployment Manual
+## Comprehensive Deployment Manual & Production Hardening Guide
 
 ### 2.1 Deployment Philosophy
 The deployment of PRISM is designed to be deterministic and repeatable. By utilizing industry-standard tools like Node.js, npm, and PostgreSQL, the application can be hosted on a wide range of infrastructure, from a dedicated local server in the studio to a scalable cloud instance (AWS, DigitalOcean, or Azure). The goal is a "Zero-Touch" deployment where the environment configuration is handled entirely through environment variables.
@@ -8,36 +8,38 @@ The deployment of PRISM is designed to be deterministic and repeatable. By utili
 Before beginning the installation, ensure the target server meets the following minimum requirements:
 
 - **Operating System**: A Linux distribution is highly recommended for production (Ubuntu 22.04 LTS is the gold standard). macOS and Windows (via WSL2) are fully supported for development and testing.
-- **CPU**: 2 Cores (minimum) to handle the asynchronous nature of Node.js and the concurrent tasks of the PostgreSQL engine.
-- **Memory (RAM)**: 4GB minimum. While the application is efficient, the database engine and the Vite build process benefit significantly from 8GB+ in high-volume environments.
-- **Storage**: SSD-based storage is mandatory for the database layer to ensure low-latency booking conflict checks.
+- **CPU**: 2 Cores (minimum) to handle the asynchronous nature of Node.js and the concurrent tasks of the PostgreSQL engine. 4 Cores recommended for high-traffic environments.
+- **Memory (RAM)**: 4GB minimum. While the application is efficient, the database engine and the Vite build process benefit significantly from 8GB+ in high-volume environments where complex reporting queries are common.
+- **Storage**: SSD-based storage is mandatory for the database layer to ensure low-latency booking conflict checks. 20GB initial capacity is usually sufficient, growing with the audit logs.
 
 ### 2.3 Required Software Runtimes
 The following software components must be pre-installed on the host system:
 
-1.  **Node.js v20.x**: The application is built for the "Iron" Long Term Support (LTS) release of Node.js. Version 20 provides the stable API and performance required for PRISM.
+1.  **Node.js v20.x (LTS)**: The application is built for the "Iron" Long Term Support release. Version 20 provides the stable API and performance required for PRISM.
 2.  **npm (Node Package Manager)**: Usually bundled with Node.js, used to manage all application dependencies.
 3.  **PostgreSQL v14+**: The primary relational database engine.
-4.  **Process Manager (PM2)**: A production process manager for Node.js applications that handles automatic restarts and log rotation.
+4.  **Process Manager (PM2)**: A production process manager for Node.js applications that handles automatic restarts, log rotation, and basic monitoring.
+5.  **Nginx (Recommended)**: For use as a reverse proxy and SSL termination point.
 
 ### 2.4 Detailed PostgreSQL Configuration
 The database is the most critical part of the installation. Follow these steps precisely:
 
-#### A. Installation
+#### 2.4.1 Installation
 ```bash
 # For Ubuntu/Debian
 sudo apt update
 sudo apt install postgresql postgresql-contrib
 ```
 
-#### B. Service Verification
+#### 2.4.2 Service Verification
 Ensure the service is active and set to start on boot:
 ```bash
 sudo systemctl start postgresql
 sudo systemctl enable postgresql
+sudo systemctl status postgresql
 ```
 
-#### C. Secure Role & Database Setup
+#### 2.4.3 Secure Role & Database Setup
 It is a security best practice to never use the `postgres` superuser for daily application operations.
 1. Access the SQL prompt: `sudo -u postgres psql`
 2. Create a dedicated database for PRISM: `CREATE DATABASE prism_prod;`
@@ -46,29 +48,33 @@ It is a security best practice to never use the `postgres` superuser for daily a
 5. Connect to the new database: `\c prism_prod`
 6. Ensure the user has schema rights: `GRANT ALL ON SCHEMA public TO prism_app_user;`
 
-#### D. Performance Tuning (Optional but Recommended)
-For high-volume studios, consider adjusting `postgresql.conf`:
+#### 2.4.4 Performance Tuning (Optional but Recommended)
+For high-volume studios, consider adjusting these settings in `/etc/postgresql/14/main/postgresql.conf`:
 - `shared_buffers`: Set to 25% of total system RAM.
-- `work_mem`: Increase for complex reporting queries.
-- `max_connections`: Adjust based on expected user load.
+- `effective_cache_size`: Set to 75% of total system RAM.
+- `work_mem`: Increase to 16MB for complex reporting queries.
+- `max_connections`: Adjust based on expected concurrent user load (usually 100-200 is sufficient).
 
 ### 2.5 Application Deployment Sequence
 Once the runtimes are ready, follow this sequence to deploy the PRISM application:
 
 #### Step 1: Clone & Preparation
 ```bash
-git clone <repository_url> /opt/prism
-cd /opt/prism
+# Clone the project to a production-ready directory
+sudo mkdir -p /var/www/prism
+sudo chown $USER:$USER /var/www/prism
+git clone <repository_url> /var/www/prism
+cd /var/www/prism
 ```
 
 #### Step 2: Dependency Installation
 ```bash
-npm install
+npm install --production=false
 ```
-*Note: This command installs both the production dependencies (Express, Drizzle, etc.) and the development tools (TypeScript, Vite) needed for the build process.*
+*Note: We install development dependencies initially to allow the `build` command to run. These can be pruned later if disk space is a concern.*
 
 #### Step 3: Environment Configuration
-Create the `.env` file in the project root. This file contains the "secrets" that the application needs to run.
+Create the `.env` file in the project root. This file contains the "secrets" that the application needs to run. Use a tool like `openssl rand -base64 32` to generate secure secrets.
 ```env
 # The connection string follows the pattern: 
 # postgres://[user]:[password]@[host]:[port]/[database]
@@ -96,32 +102,63 @@ Compile the application into optimized JavaScript and bundle the React frontend:
 ```bash
 npm run build
 ```
-This process creates a `dist/` directory. `dist/index.cjs` is the single entry point for the production server.
+This process creates a `dist/` directory. `dist/index.cjs` is the single entry point for the production server. This file contains the pre-rendered frontend and the API logic.
 
 #### Step 6: Process Management with PM2
-To ensure the application stays online 24/7, use PM2:
+To ensure the application stays online 24/7 and restarts after a crash:
 ```bash
-# Install PM2 globally if not already present
-npm install -g pm2
+# Install PM2 globally
+sudo npm install -g pm2
 
-# Start the application
-pm2 start dist/index.cjs --name "prism-server"
+# Start the application with optimized memory settings
+pm2 start dist/index.cjs --name "prism-server" --node-args="--max-old-space-size=2048"
 
 # Generate a startup script to survive server reboots
 pm2 startup
 pm2 save
 ```
 
-### 2.6 Advanced Configuration & Customization
-- **SSL Termination**: It is highly recommended to run PRISM behind an Nginx or Apache reverse proxy for SSL/TLS termination.
-- **Log Management**: PM2 handles logs, but for enterprise setups, consider integrating with ELK or CloudWatch.
-- **Health Checks**: The server provides internal health endpoints that can be monitored by load balancers.
+### 2.6 Nginx Reverse Proxy Configuration (Recommended)
+To serve the application on port 80/443 and handle SSL, create `/etc/nginx/sites-available/prism`:
+```nginx
+server {
+    listen 80;
+    server_name your-studio-domain.com;
 
-### 2.7 Post-Installation Verification
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+Then enable the site and restart Nginx:
+```bash
+sudo ln -s /etc/nginx/sites-available/prism /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### 2.7 Security Hardening
+- **Firewall**: Ensure only ports 80, 443, and SSH (22) are open. `sudo ufw allow 80,443,22/tcp`.
+- **SSL**: Use Certbot to get a free Let's Encrypt certificate: `sudo certbot --nginx -d your-studio-domain.com`.
+- **Automatic Updates**: Enable `unattended-upgrades` on your Linux server to keep security patches current.
+
+### 2.8 Post-Installation Verification
 After the deployment, verify the system's health:
 1.  **Check Logs**: `pm2 logs prism-server`. Look for the message "[express] serving on port 5000".
-2.  **Database Connection**: Try to log in with the default administrator account (if seeded) or create the first company via the `/api/admin/companies` endpoint if performing a fresh "Greenfield" installation.
-3.  **Frontend Access**: Open a web browser and navigate to `http://<server_ip>:5000`. You should see the PRISM login screen.
+2.  **Database Connection**: Try to log in with the default administrator account.
+3.  **Frontend Access**: Open a web browser and navigate to your domain. You should see the PRISM login screen.
+4.  **API Check**: Use `curl http://localhost:5000/api/companies` to verify the backend is responding.
+
+### 2.9 Maintenance and Backups
+- **Database Backup**: Set up a daily cron job: `pg_dump prism_prod > /backups/prism_$(date +%F).sql`.
+- **Log Rotation**: PM2 handles this automatically, but check `/root/.pm2/logs` occasionally.
 
 ---
 *End of Document 2 - Installation & Configuration*

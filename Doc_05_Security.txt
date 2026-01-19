@@ -1,58 +1,59 @@
 # 5. PRISM: Security, Permissions & Administration
-## Comprehensive Governance Manual
+## Comprehensive Governance Manual & Security Architecture Guide
 
-### 5.1 Security Philosophy
-The PRISM security model is designed for a multi-user environment where data integrity and confidentiality are paramount. It operates on a "Zero-Trust" principle at the API level, ensuring that no request is processed without valid authentication and explicit authorization.
+### 5.1 Security Philosophy: Zero-Trust and PIN-Based Access
+The PRISM security model is designed for a high-intensity, multi-user environment where data integrity and confidentiality are paramount. It operates on a "Zero-Trust" principle at the API level, ensuring that no request—regardless of origin—is processed without valid authentication and explicit authorization.
 
-### 5.2 Authentication Architecture
-PRISM uses a robust, session-based authentication system.
+### 5.2 Authentication Architecture: High-Performance Security
+PRISM uses a robust, session-based authentication system tailored for the unique environment of a production studio.
 
-#### A. PIN-Based Access
-Designed for the high-pressure environment of a studio floor, PRISM uses a Username + Security PIN combination.
-- **Why PINs?**: Studio environments often require users to move between workstations. PINs offer a faster, yet secure, alternative to complex passwords in internal networks.
-- **Security PIN Enforcement**: PINs are never sent back to the client. The backend validates them and establishes a secure session.
+#### 5.2.1 PIN-Based Access Strategy
+Designed for the high-pressure environment of a studio floor where speed is critical, PRISM uses a Username + Security PIN combination.
+- **The "Fast-Login" Need**: Studio environments often require users to move between workstations or share consoles. PINs offer a faster alternative to complex passwords while maintaining high security within the internal network.
+- **Security PIN Enforcement**: PINs are hashed using bcrypt before storage. They are never sent back to the client in JSON responses. The backend validates them and establishes a secure, encrypted session.
 
-#### B. Session Management
-- **Persistence**: Sessions are stored in the PostgreSQL database using `connect-pg-simple`. This means users stay logged in even if the server process is restarted.
-- **Encryption**: Cookies are signed using a server-side `SESSION_SECRET` to prevent tampering.
+#### 5.2.2 Persistent Session Management
+- **Persistence Layer**: Sessions are stored in the PostgreSQL database using the `connect-pg-simple` driver. This means users stay logged in even if the server process restarts or the server reboots.
+- **Encryption and Integrity**: Cookies are signed using a server-side `SESSION_SECRET` (32+ character random string). This prevents session hijacking and client-side tampering.
+- **Lifecycle**: Sessions have a configurable TTL (Time-To-Live), automatically logging out inactive users after a set period.
 
-### 5.3 Granular Permission Model (RBAC)
-PRISM features a highly sophisticated Role-Based Access Control (RBAC) system. Permissions are not just "Admin" or "User"; they are granular down to the action level.
+### 5.3 Granular Permission Matrix (RBAC)
+PRISM features one of the most sophisticated Role-Based Access Control (RBAC) systems in the studio management industry. Permissions are not just "Admin" or "User"; they are granular down to the specific action level within each module.
 
-#### A. The Four Permission Tiers
-For every module and section, a user can be granted:
-1.  **View**: Can see the data but cannot change anything.
-2.  **Create**: Can add new records (e.g., make a new booking).
-3.  **Edit**: Can modify existing records.
-4.  **Delete**: Can remove records (highly restricted).
+#### 5.3.1 The Four-Tier Action Level
+For every module (Operations, Masters, Reports, Utility), a user can be granted:
+1.  **View**: Read-only access. Can see lists and dashboards but cannot add or change data.
+2.  **Create**: Permission to add new records (e.g., make a new booking).
+3.  **Edit**: Permission to modify existing records (e.g., change a booking time).
+4.  **Delete**: Restricted permission for data removal (highly restricted to Admins).
 
-#### B. Predefined Roles
-- **Admin**: "Super-user" with unrestricted access to all modules, settings, and logs.
-- **GST / Account**: Full access to financial modules and master data, but restricted administrative rights.
-- **Non-GST / Operation**: Can manage bookings and schedules but cannot view chalan amounts or project financials.
+#### 5.3.2 Predefined Enterprise Roles
+- **Admin**: The "Super-user." Unrestricted access to all modules, system settings, raw logs, and user management.
+- **GST / Account**: Full access to financial modules (Chalans) and master data (Customers), but restricted from changing system-wide settings or deleting audit logs.
+- **Non-GST / Operation**: Can manage bookings, calendars, and schedules but is completely blinded to chalan amounts, project financials, and GST data.
+- **Custom Role**: The peak of flexibility. Administrators can create a "Custom" profile where they toggle permissions for every single page and action independently.
 
-#### C. The "Custom" Role
-The most powerful feature of the RBAC system. Administrators can create "Custom" profiles where they toggle permissions for every single page independently. This allows for specialized roles like "Night Shift Manager" or "Junior Accountant."
+### 5.4 Data Integrity and The Digital Paper Trail
+Every action in PRISM leaves a permanent, un-erasable digital footprint.
 
-### 5.4 Data Integrity & Audit Trails
-Every action in PRISM leaves a digital footprint.
+#### 5.4.1 Booking & Financial Audit Logs
+Whenever a critical record (Booking or Chalan) is modified, the system records:
+- **Actor**: The unique user ID of the person performing the action.
+- **Timestamp**: To-the-second accuracy of when the change occurred.
+- **Payload**: A JSON-serialized "Diff" showing the "Before" and "After" state of the record. This allows administrators to "Rewind" and understand the history of any dispute.
 
-#### A. Booking & Audit Logs
-Whenever a booking or chalan is modified, the system records:
-- **Who**: The user ID of the person performing the action.
-- **When**: A precise timestamp.
-- **What**: A JSON diff showing the "Before" and "After" state of the record.
+#### 5.4.2 System-Wide Activity History
+The `history` module provides a globally searchable timeline of all system events. Administrators can filter by User, Date, or Action Type to reconstruct the sequence of events during scheduling disputes or financial audits.
 
-#### B. User Activity History
-The `history` module provides a searchable timeline of all system events, allowing administrators to reconstruct the sequence of events during scheduling disputes or financial audits.
+### 5.5 Multi-Tenant Data Isolation and Security
+PRISM supports a robust "Company" structure. All data—Users, Customers, Bookings, and Reports—are strictly scoped to a specific `companyId`. 
+- **Isolation**: Even if multiple business units share the same physical server, their data is logically separated at the query level.
+- **Safety**: A user from Company A can never, under any circumstances, query data from Company B.
 
-### 5.5 Multi-Tenant Data Isolation
-PRISM supports a "Company" structure. Users and Master data are scoped to a specific `companyId`. This ensures that in environments where multiple business units share the same server, data remains strictly isolated.
-
-### 5.6 Administrative Utilities
-- **User Management**: Creating, updating, and inactivating system users.
-- **System Diagnostics**: Internal endpoints to monitor database health and session counts.
-- **Security PIN Reset**: Admin-only capability to help users recover their accounts.
+### 5.6 Administrative Security Utilities
+- **User Lifecycle Management**: Real-time capability to create, update, or "Kill" (Inactivate) system users.
+- **System Health Diagnostics**: Internal endpoints to monitor database connection health and active session counts.
+- **Security PIN Recovery**: Admin-only capability to reset a user's PIN without knowing the original, ensuring business continuity.
 
 ---
 *End of Document 5 - Security & Administration*

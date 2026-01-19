@@ -1,47 +1,50 @@
 # 6. PRISM: Reports & Analytical Intelligence
-## Comprehensive Intelligence Manual
+## Comprehensive Intelligence Manual & Business Analytics Guide
 
-### 6.1 Data-Driven Studio Management
-The Reports module transforms raw operational data from the PRISM database into actionable business intelligence. By aggregating thousands of booking and billing records, it provides studio owners with the insights needed to optimize space, manage staff, and maximize revenue.
+### 6.1 Data-Driven Studio Management Philosophy
+The Reports module transforms raw operational data from the PRISM database into actionable business intelligence. By aggregating thousands of booking and billing records, it provides studio owners and production managers with the insights needed to optimize facility usage, manage staff workload, and maximize revenue per square foot of studio space.
 
-### 6.2 The Conflict Audit Intelligence
-While the booking engine prevents conflicts in real-time, the **Conflict Report** provides a macro-view of scheduling health.
-- **Proactive Resolution**: Lists all overlapping requests (especially Tentative vs. Confirmed) across a custom time window.
-- **Resource Bottlenecks**: Identifies which rooms or editors are consistently over-requested, signaling a need for resource expansion.
+### 6.2 The Conflict Audit Intelligence (Proactive Risk Management)
+While the real-time booking engine prevents immediate conflicts, the **Conflict Report** provides a macro-view of the studio's scheduling health.
+- **Proactive Resolution**: Lists all overlapping requests across a custom time window (e.g., the next 30 days). This is crucial for identifying "Resource Wars" between high-priority projects.
+- **Resource Bottleneck Identification**: Uses frequency analysis to identify which rooms or editors are consistently over-requested, signaling a strategic need for facility expansion or additional hiring.
 
-### 6.3 Operational Utilization Analytics
-This is the "Efficiency Engine" of the studio.
+### 6.3 Operational Utilization Analytics: The Efficiency Engine
+Utilization is the "Holy Grail" of studio management. PRISM tracks efficiency at two levels:
 
-#### A. Editor Utilization Report
-- **Billable vs. Available**: Calculates the percentage of an editor's shift that was actually billed to a client.
-- **Specialization Analysis**: Identifies if certain types of editors (e.g., VFX artists) are under-utilized compared to others (e.g., Video Editors).
+#### 6.3.1 Editor Utilization Report (Staff Efficiency)
+- **Billable vs. Available Hours**: Calculates the precise percentage of an editor's shift that was actually billed to a client.
+- **Specialization Gap Analysis**: Identifies if certain technical domains (e.g., VFX artists) are under-utilized compared to others (e.g., Colorists), allowing for strategic cross-training.
+- **Historical Trends**: Tracks an editor's performance over months to identify burnout or peak productivity periods.
 
-#### B. Room Occupancy Heatmaps
-- **Peak Hour Analysis**: Shows which times of day and days of the week the studio is at capacity.
-- **Room Type Profitability**: Helps identify which facility types (e.g., Sound Mixing vs. DI) generate the most billable hours.
+#### 6.3.2 Room Occupancy Heatmaps (Facility Efficiency)
+- **Peak Hour Analysis**: Visualizes which times of day and days of the week the studio is at maximum capacity. This helps in implementing "Off-Peak" pricing strategies.
+- **Room Type Profitability**: Cross-references billable hours with room type, helping management understand which facility types (e.g., Sound Mixing vs. DI Suites) generate the highest ROI.
 
-### 6.4 Financial Reporting & Chalan Audits
-Integrated directly with the billing module, these reports provide a clear picture of the studio's financial health.
+### 6.4 Financial Reporting and Chalan Audits
+Integrated directly with the billing module, these reports provide a crystal-clear picture of the studio's financial health and receivables.
 
-#### A. Chalan Summary Report
-- **Revenue by Customer**: Lists the total billed amount per client organization.
-- **Project-wise Billing**: Breaks down revenue by individual film, ad, or series.
+#### 6.4.1 Revenue Summary Dashboard
+- **Revenue by Customer**: A ranked list of total billed amounts per client organization, identifying the studio's "Whales."
+- **Project-wise Revenue Tracking**: Breaks down revenue by individual film, serial, or ad project, providing "Project Profitability" insights.
 
-#### B. The Revision Audit
-A specialized report that tracks how often Chalans are revised. High revision rates can signal operational inefficiencies in data entry or client communication.
+#### 6.4.2 The Billing Quality Audit (Revision Analysis)
+A specialized report that tracks how often Chalans are revised. 
+- **Operational Insight**: High revision rates often signal issues in initial data entry or poor communication between the studio floor and the accounting office.
+- **Audit Compliance**: Provides a complete history of billing changes for external auditors.
 
-#### C. Cancellation Tracking
-Analyzes the reasons for booking and chalan cancellations. This is crucial for identifying "Churn" and improving client retention strategies.
+#### 6.4.3 Cancellation and "Lost Revenue" Tracking
+Analyzes the reasons behind booking and chalan cancellations. 
+- **Churn Analysis**: Are clients cancelling because of price, technical issues, or scheduling? PRISM helps categorize and solve these issues.
 
-### 6.5 Data Export & External Analysis
-Every report in PRISM is built for interoperability.
-- **Excel/CSV Export**: Utilizing the `xlsx` library, every report can be exported as a native Excel file.
-- **Format Consistency**: Exports maintain the same headers and data types as the on-screen view, allowing accountants to drop them directly into external ERP or Tally software without manual reformatting.
+### 6.5 Data Interoperability and External Intelligence
+PRISM acknowledges that its data often needs to feed into other systems.
+- **Native Excel/CSV Export**: Utilizing the high-performance `xlsx` library, every single report can be exported as a professional Excel file.
+- **Metadata Consistency**: Exports maintain all hidden metadata, IDs, and standardized date formats, allowing accountants to import PRISM data directly into ERP systems like SAP, Oracle, or Tally without manual reformatting.
 
-### 6.6 Advanced Analytical Insights
-- **Seasonality Tracking**: Identify months or quarters with the highest studio activity.
-- **Revenue Projection**: Estimate future income based on the "Confirmed" booking pipeline.
-- **Staff Efficiency**: Cross-reference editor utilization with chalan generation speed.
+### 6.6 Strategic Revenue Forecasting
+- **Seasonality Tracking**: Aggregates years of data to identify predictable "High Seasons" in the post-production industry.
+- **The "Confirmed" Pipeline**: Estimates future income based on the currently scheduled "Confirmed" bookings, allowing for accurate cash-flow planning.
 
 ---
 *End of Document 6 - Reports & Intelligence*

@@ -1,41 +1,47 @@
 # 1. PRISM: Introduction & System Architecture
-## Comprehensive Technical Manual
+## Comprehensive Technical Manual & Enterprise Architectural Guide
 
-### 1.1 Project Overview
-PRISM (Post-Production Management System) is an enterprise-grade studio management platform designed specifically for high-velocity post-production environments. In an industry where specialized resources like Sound Suites, VFX workstations, and Color Grading rooms are high-value assets, PRISM acts as the centralized coordination layer. It integrates scheduling, resource allocation, financial documentation, and reporting into a single, cohesive ecosystem.
+### 1.1 Project Vision and Strategic Overview
+PRISM (Post-Production Management System) is an enterprise-grade studio management platform designed specifically for high-velocity post-production environments. In an industry where specialized resources like Sound Suites, VFX workstations, and Color Grading rooms are high-value assets costing thousands of dollars per hour, PRISM acts as the centralized coordination layer. It integrates scheduling, resource allocation, financial documentation, and reporting into a single, cohesive ecosystem.
 
 The system is engineered to solve the "resource-time" bottleneck. By providing real-time visibility into room and editor availability, it prevents the common industry pitfalls of double-booking, idle resource time, and billing leakages. PRISM replaces disparate tracking methods—often a mix of whiteboards, calendar apps, and spreadsheets—with a robust, relational data model that ensures every billable minute is tracked, validated, and accounted for.
 
-### 1.2 The "Single Source of Truth" Philosophy
+### 1.2 Core Architectural Philosophy
 At the core of PRISM's architecture is the principle of a **Single Source of Truth (SSOT)**. This philosophy dictates that every piece of data—be it a customer's GST number, a room's technical capacity, or a booking's status—is stored in exactly one place and defined by one unified schema.
 
-- **Schema-Driven Development**: The database schema (defined in TypeScript via Drizzle ORM) is the definitive source for data structure. This schema automatically generates the TypeScript interfaces used by the frontend and the Zod validation objects used by the backend.
-- **Transactional Integrity**: By leveraging PostgreSQL's ACID compliance, PRISM ensures that complex operations (like splitting a booking or revising a chalan) are atomic. If any part of a multi-step update fails, the entire transaction is rolled back, preventing "partially updated" or corrupt data.
-- **Relational Governance**: The system enforces strict foreign key relationships. For example, a Chalan cannot exist without a valid Customer ID, and a Booking cannot be assigned to an Editor who doesn't exist in the Master roster.
+#### 1.2.1 Schema-Driven Development (SDD)
+The database schema (defined in TypeScript via Drizzle ORM) is the definitive source for data structure. This schema automatically generates the TypeScript interfaces used by the frontend and the Zod validation objects used by the backend. This eliminates the "interface drift" common in large projects where the frontend and backend disagree on data formats.
+
+#### 1.2.2 Transactional Integrity and ACID Compliance
+By leveraging PostgreSQL's ACID compliance, PRISM ensures that complex operations (like splitting a booking or revising a chalan) are atomic. If any part of a multi-step update fails, the entire transaction is rolled back, preventing "partially updated" or corrupt data. This is critical for financial records where an invoice must always match its line items.
+
+#### 1.2.3 Relational Governance
+The system enforces strict foreign key relationships. For example, a Chalan cannot exist without a valid Customer ID, and a Booking cannot be assigned to an Editor who doesn't exist in the Master roster. These constraints are enforced at the database level for maximum reliability.
 
 ### 1.3 High-Level Component Architecture
 PRISM is architected using a modern 3-tier decoupling strategy, ensuring that the presentation, logic, and storage layers are independently manageable yet seamlessly integrated.
 
 #### A. The Presentation Layer (React Frontend)
-The frontend is a highly reactive Single Page Application (SPA) built with React 18 and Vite.
-- **UI Architecture**: Uses a atomic design approach, where smaller UI primitives (Buttons, Inputs) are composed into complex molecules (Booking Cards, Chalan Invoices).
-- **State Management**: Rather than using a complex global state like Redux, PRISM utilizes **Server State Management**. TanStack Query (React Query) handles the caching, invalidation, and synchronization of data between the browser and the API.
+The frontend is a highly reactive Single Page Application (SPA) built with React 18.
+- **UI Architecture**: Uses an atomic design approach, where smaller UI primitives (Buttons, Inputs) are composed into complex molecules (Booking Cards, Chalan Invoices).
+- **State Management**: Rather than using a complex global state like Redux, PRISM utilizes **Server State Management**. TanStack Query (React Query) handles the caching, invalidation, and synchronization of data between the browser and the API. This reduces memory overhead and ensures the UI always shows the latest data.
 - **Responsive Design**: Built with Tailwind CSS, the interface is optimized for both desktop "Command Center" views (large calendars) and mobile "On-the-go" checks for studio managers.
+- **Design System Consistency**: Every pixel is guided by an 8px grid system, ensuring a professional and uniform aesthetic across all modules.
 
 #### B. The API & Logic Layer (Node.js/Express)
 The backend is a robust RESTful API that handles the heavy lifting of business logic.
 - **Stateless Design**: Each request contains all the information needed to process it (via session tokens), allowing for easier horizontal scaling.
 - **Middleware Chain**: Every request passes through a series of security and validation gates:
-    1.  **Authentication**: Verifies the session validity.
-    2.  **Authorization (RBAC)**: Checks the user's granular permissions for that specific module.
-    3.  **Validation (Zod)**: Ensures the incoming JSON payload perfectly matches the expected structure and data types.
+    1.  **Authentication Middleware**: Verifies the session validity and populates the user context.
+    2.  **Authorization (RBAC) Middleware**: Checks the user's granular permissions for that specific module and action.
+    3.  **Validation (Zod) Middleware**: Ensures the incoming JSON payload perfectly matches the expected structure and data types.
 - **Controller-Storage Pattern**: Routes handle the HTTP interface (params, body, status codes), while the "Storage" layer handles the actual data persistence logic, separating the "How we talk" from "What we do with data."
 
 #### C. The Persistence Layer (PostgreSQL)
 The data layer uses PostgreSQL, the industry standard for relational reliability.
 - **Normalized Schema**: Designed to minimize redundancy and maximize query performance.
 - **Constraint Enforcement**: Uses native database constraints (Unique, Not Null, Check) as the final line of defense for data quality.
-- **Session Persistence**: Sessions are not stored in memory (which would be lost on server restart) but are persisted in a dedicated `sessions` table in the database.
+- **Session Persistence**: Sessions are not stored in memory (which would be lost on server restart) but are persisted in a dedicated `sessions` table in the database using the `connect-pg-simple` driver.
 
 ### 1.4 Detailed Technology Stack Breakdown
 PRISM's technical foundation is comprised of carefully selected, modern technologies that balance performance with developer efficiency.
@@ -49,20 +55,46 @@ PRISM's technical foundation is comprised of carefully selected, modern technolo
 
 ### 1.5 Detailed Internal Communication Flows
 The communication between layers is standardized using RESTful principles.
-- **Request Flow**: A user interaction on the frontend triggers a TanStack Query mutation. The request is sent with an `application/json` payload and the session cookie.
+- **Request Flow**: A user interaction on the frontend (e.g., clicking "Save Booking") triggers a TanStack Query mutation. The request is sent with an `application/json` payload and the session cookie.
 - **Validation Flow**: The backend receives the request. Before any logic is executed, the `zod` schema parses the body. If an error is found, a structured JSON error response is returned, which the frontend automatically displays as a toast notification.
-- **Response Flow**: Upon success, the backend returns the updated record. The frontend updates its local cache, and any other components viewing that data (like the calendar) are instantly updated.
+- **Response Flow**: Upon success, the backend returns the updated record. The frontend updates its local cache, and any other components viewing that data (like the calendar) are instantly updated via query invalidation.
 
-### 1.6 System Scalability & Extensibility
+### 1.6 Lifecycle of a Data Record
+To understand the architecture, one must follow the lifecycle of a record, for example, a **Booking**:
+1.  **Creation**: Initiated in the `BookingForm.tsx`. Validated locally by `zodResolver`.
+2.  **API Transport**: Sent to `POST /api/bookings`. Caught by `routes.ts`.
+3.  **Conflict Engine**: The route calls `storage.checkBookingConflicts`. This is a complex SQL query that scans for overlapping time intervals.
+4.  **Persistence**: If free, `storage.createBooking` executes an `INSERT` statement.
+5.  **Audit**: A trigger or service call creates a matching entry in `booking_logs`.
+6.  **Notification**: The frontend receives the 201 Created response and re-renders the calendar.
+
+### 1.7 Global Directory Structure
+- **`/client`**: The React application source.
+    - **`/src/pages`**: Modularized pages (Masters, Operations, Reports).
+    - **`/src/components`**: Shared UI primitives and complex business components.
+    - **`/src/hooks`**: Custom hooks for auth, permissions, and specialized data fetching.
+    - **`/src/lib`**: API clients and utility functions.
+- **`/server`**: The Express.js backend source.
+    - **`index.ts`**: Server entry point and middleware configuration.
+    - **`routes.ts`**: REST API endpoint definitions and permission guards.
+    - **`storage.ts`**: The Data Access Object (DAO) implementing all database logic.
+    - **`db.ts`**: Database connection pool and configuration.
+- **`/shared`**: Universal code used by both layers.
+    - **`schema.ts`**: The master database schema and Zod validation objects.
+
+### 1.8 System Scalability & Extensibility
 PRISM is built with the future in mind. 
 - **Modular Routes**: Adding a new feature (like a "Quality Control" module) is as simple as defining a new table in the schema and a new route file in the server.
 - **API First**: Because the system is built as a REST API, a mobile app or a client-facing portal could be built in the future to interact with the same backend without any changes to the core logic.
 - **Container Readiness**: The application is designed to be environment-agnostic. By changing the `.env` variables, it can easily move from a local developer machine to a cloud-based production server.
 
-### 1.7 Architectural Design Decisions
+### 1.9 Architectural Design Decisions
 - **Why PostgreSQL?**: Compared to NoSQL solutions, Postgres provides the strict relational mapping required for complex booking conflict logic.
 - **Why Drizzle?**: It allows for writing "SQL-like" TypeScript code without the overhead of heavy abstractions, ensuring high-performance database interactions.
 - **Why React-Query?**: It abstracts away the complexities of "loading" and "error" states, allowing developers to focus on building the UI.
+
+### 1.10 Future-Proofing and Maintenance
+The architecture supports zero-downtime migrations (if handled correctly) and easy updates. Since every component is decoupled, a bug in the "Reports" module cannot crash the "Booking" engine. This isolation is the key to long-term software health.
 
 ---
 *End of Document 1 - System Architecture*

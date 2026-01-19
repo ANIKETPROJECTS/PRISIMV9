@@ -1,79 +1,86 @@
 # 3. PRISM: Operations & Business Logic
-## Comprehensive Functional Manual
+## Comprehensive Functional Manual & Operations Workflow Guide
 
 ### 3.1 Operations: The Core Studio Engine
 The Operations module is the transactional heart of PRISM. It is where the studio's day-to-day activity—scheduling rooms, assigning editors, and managing client sessions—is managed. This document explores the deep logic and workflows that ensure the studio runs like a well-oiled machine.
 
 ### 3.2 The Booking Lifecycle
-A booking in PRISM is not a static record; it is a state-driven entity that evolves through the production cycle.
+A booking in PRISM is not a static record; it is a state-driven entity that evolves through the production cycle. Understanding these states is critical for operational efficiency.
 
-#### A. States of a Booking
-1.  **Planning (Blue)**: An internal placeholder. These do not block resources but indicate intent. Useful for production meetings.
-2.  **Tentative (Yellow)**: A "Soft Hold." The room and editor are reserved, but the booking can be bumped by a "Confirmed" request if the studio policy allows.
-3.  **Confirmed (Green)**: A "Hard Hold." The resources are officially locked. Conflict detection is most rigorous for this state.
-4.  **Cancelled (Red)**: The session is no longer happening. The record is preserved for cancellation reports, but the room and editor are released back into the available pool.
+#### 3.2.1 States of a Booking
+1.  **Planning (Blue)**: An internal placeholder. These do not block resources but indicate intent. Useful for production meetings or tentative pipeline tracking. They appear visually distinct on the calendar.
+2.  **Tentative (Yellow)**: A "Soft Hold." The room and editor are reserved, but the booking can be bumped by a "Confirmed" request if the studio policy allows. This signals to other managers that the slot is likely taken but not yet finalized.
+3.  **Confirmed (Green)**: A "Hard Hold." The resources are officially locked. Conflict detection is most rigorous for this state. This is the state required before a Chalan can be generated.
+4.  **Cancelled (Red)**: The session is no longer happening. The record is preserved for cancellation reports and audit trails, but the room and editor are released back into the available pool immediately.
 
-#### B. The Creation Workflow
-When a user opens the "New Booking" dialog, a sequence of background validations occurs:
-1.  **Selection**: The user selects a Date, Room, Customer, and Project.
-2.  **Time Definition**: Start and End times are set. The system supports 24-hour time entry.
-3.  **Staffing**: An Editor is assigned from the roster.
-4.  **Conflict Validation**: As the user fills the form, the system performs real-time checks.
+#### 3.2.2 The Creation Workflow
+When a user opens the "New Booking" dialog, a sequence of background validations occurs to ensure data quality:
+1.  **Context Selection**: The user selects a Date, Room, Customer, and Project. The system filters projects based on the selected customer.
+2.  **Time Definition**: Start and End times are set. The system supports 24-hour time entry and handles durations crossing the midnight threshold.
+3.  **Staffing**: An Editor is assigned from the roster. Only editors marked as `isActive` in the Masters module are displayed.
+4.  **Conflict Validation**: As the user fills the form, the system performs real-time, asynchronous checks against the server to prevent data entry frustration.
 
 ### 3.3 The Conflict Detection Engine
-This is the most critical piece of business logic in PRISM. It prevents the expensive mistake of double-booking resources. The engine (implemented in `server/storage.ts`) performs three parallel checks:
+This is the most critical piece of business logic in PRISM. It prevents the expensive mistake of double-booking high-value resources. The engine (implemented in `server/storage.ts`) performs three parallel checks:
 
 #### 1. Room Conflict Check
 The engine queries the database for any existing "Confirmed" or "Tentative" bookings in the same room on the same date.
 - **Overlapping Logic**: A conflict is flagged if `(New_Start < Existing_End) AND (New_End > Existing_Start)`.
-- **Ignore Flag**: If a room is marked with `ignoreConflict: true` (e.g., a shared office space), this check is bypassed.
+- **Ignore Flag**: If a room is marked with `ignoreConflict: true` (e.g., a shared production office or a lobby space), this check is bypassed.
 
 #### 2. Editor Conflict Check
 The engine ensures that an editor is not booked in two different rooms at the same time. This is a common failure point in manual scheduling that PRISM eliminates.
-- **Staff-wide Check**: Even if Room A is free, if the assigned Editor is already in Room B during that window, the system will block the booking and display the conflicting room's name.
+- **Staff-wide Check**: Even if Room A is free, if the assigned Editor is already in Room B during that window, the system will block the booking and display the name of the conflicting project.
 
 #### 3. Leave Integration Check
 The engine cross-references the `editor_leaves` table.
-- **Hard Block**: If an editor has logged a leave (Sick, Vacation, or Personal) that overlaps with the booking date, the system raises a high-priority warning.
+- **Hard Block**: If an editor has logged a leave (Sick, Vacation, or Personal) that overlaps with the booking date, the system raises a high-priority warning. Even if the editor is free in other rooms, their absence takes precedence.
 
 ### 3.4 Advanced Booking: Repeat & Multi-Day
 Studios often handle long-running projects (e.g., a "Movie Grade" that takes 14 consecutive days). PRISM simplifies this with a "Repeat" logic:
-- **Bulk Creation**: The user defines a single day's pattern and a "Repeat Until" date.
+- **Bulk Creation**: The user defines a single day's pattern (e.g., 10 AM to 6 PM) and a "Repeat Until" date or number of occurrences.
 - **Bulk Validation**: The system doesn't just create records blindly. It validates *every single day* in the sequence. If Day 4 has a conflict with an existing booking, the system will alert the user before completing the bulk action, allowing them to skip or adjust that specific day.
+- **Recursive Conflict Resolution**: Users can choose to "Book all available and skip conflicts," providing a high-speed path for complex scheduling.
 
 ### 3.5 Actual Time Tracking & Billing Accuracy
 Operational reality often deviates from the plan. Sessions start late or run over. PRISM tracks two sets of times:
-- **Booked Time**: The originally scheduled slot (used for planning).
+- **Booked Time**: The originally scheduled slot (used for planning and room blocking).
 - **Actual Time**: The time the session actually occurred (used for billing).
 When the "Actual Times" are entered, the system automatically recalculates the `totalHours`. This integration ensures that the billing department doesn't have to manually cross-reference paper logs when generating chalans.
 
 ### 3.6 Chalan (Billing) Workflow
 The Chalan module is the bridge between operations and accounting. It transforms studio time into billable documents.
 
-#### A. From Booking to Chalan
+#### 3.6.1 From Booking to Chalan
 Users can select multiple completed bookings for a single project and aggregate them into one Chalan. 
 - **Auto-Population**: The system pulls the Customer's GST info, the Project's type, and the calculated billable hours automatically.
-- **Hour Logic**: `(Actual_End - Actual_Start) - Break_Hours = Billable_Hours`.
+- **Hour Logic**: `(Actual_End - Actual_Start) - Break_Hours = Billable_Hours`. The system handles break hours as either fixed deductions or specific time windows.
 
-#### B. The Revision System
-In the studio world, billing is rarely final on the first try. Clients request changes, or data errors are found. PRISM handles this through a strict **Revision Tracking** system:
+#### 3.6.2 The Revision System
+In the studio world, billing is rarely final on the first try. Clients request changes, or data errors are found during QC. PRISM handles this through a strict **Revision Tracking** system:
 1.  When a Chalan is edited, the system doesn't just overwrite the record.
-2.  It creates a new entry in `chalan_revisions`.
-3.  The original record's `is_revised` flag is toggled.
+2.  It creates a new entry in `chalan_revisions` storing the `changes` as a JSON diff.
+3.  The original record's `is_revised` flag is toggled, and the `revisionNumber` is incremented.
 4.  This creates a transparent audit trail of "Who authorized this billing change and why."
 
-#### C. Cancellation Policy
-To maintain financial compliance, Chalans cannot be deleted. They must be "Cancelled." This requires a mandatory `cancelReason`. The Chalan number is preserved in the system but marked as void, ensuring no "missing" numbers in the financial sequence.
+#### 3.6.3 Cancellation Policy
+To maintain financial compliance and prevent fraud, Chalans cannot be deleted once generated. They must be "Cancelled." 
+- **Requirement**: Requires a mandatory `cancelReason`. 
+- **Integrity**: The Chalan number is preserved in the system but marked as void, ensuring no "missing" numbers in the financial sequence during audits.
 
 ### 3.7 Detailed Operational Scenarios
-- **Overnight Bookings**: The system correctly calculates durations for sessions crossing the midnight threshold.
+- **Overnight Bookings**: The system correctly calculates durations for sessions crossing the midnight threshold (e.g., 10 PM to 4 AM).
 - **Break Time Logic**: Support for both fixed (e.g., "1 hour") and variable (e.g., "Lunch & Dinner") break deductions.
 - **Status Locking**: Once a Chalan is generated, the underlying booking is locked to prevent accidental time changes that would invalidate the bill.
 
 ### 3.8 Operations Audit: Booking Logs
 Every single change to an operational record is logged in the `booking_logs` table.
-- **What is Logged**: The user who made the change, the timestamp, and a JSON-serialized diff of what changed (e.g., "Status changed from Tentative to Confirmed").
-- **Why it matters**: This transparency is essential for resolving disputes like "Who moved my booking?" or "When was this session cancelled?".
+- **Log Content**: The user who made the change, the timestamp, the action type (CREATE, UPDATE, DELETE, CANCEL), and a JSON-serialized diff of what changed.
+- **Utility**: This transparency is essential for resolving disputes like "Who moved my booking?" or "When was this session cancelled?".
+
+### 3.9 Error Handling in Operations
+- **Network Resilience**: The frontend handles intermittent connectivity by showing loading states and retry buttons.
+- **Validation Feedback**: Instead of generic "Error" messages, the system provides specific feedback (e.g., "Editor John Doe is on leave from Jan 20 to Jan 22").
 
 ---
 *End of Document 3 - Operations & Logic*
