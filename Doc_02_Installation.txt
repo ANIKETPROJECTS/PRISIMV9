@@ -46,6 +46,12 @@ It is a security best practice to never use the `postgres` superuser for daily a
 5. Connect to the new database: `\c prism_prod`
 6. Ensure the user has schema rights: `GRANT ALL ON SCHEMA public TO prism_app_user;`
 
+#### D. Performance Tuning (Optional but Recommended)
+For high-volume studios, consider adjusting `postgresql.conf`:
+- `shared_buffers`: Set to 25% of total system RAM.
+- `work_mem`: Increase for complex reporting queries.
+- `max_connections`: Adjust based on expected user load.
+
 ### 2.5 Application Deployment Sequence
 Once the runtimes are ready, follow this sequence to deploy the PRISM application:
 
@@ -106,7 +112,12 @@ pm2 startup
 pm2 save
 ```
 
-### 2.6 Post-Installation Verification
+### 2.6 Advanced Configuration & Customization
+- **SSL Termination**: It is highly recommended to run PRISM behind an Nginx or Apache reverse proxy for SSL/TLS termination.
+- **Log Management**: PM2 handles logs, but for enterprise setups, consider integrating with ELK or CloudWatch.
+- **Health Checks**: The server provides internal health endpoints that can be monitored by load balancers.
+
+### 2.7 Post-Installation Verification
 After the deployment, verify the system's health:
 1.  **Check Logs**: `pm2 logs prism-server`. Look for the message "[express] serving on port 5000".
 2.  **Database Connection**: Try to log in with the default administrator account (if seeded) or create the first company via the `/api/admin/companies` endpoint if performing a fresh "Greenfield" installation.

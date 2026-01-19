@@ -48,5 +48,10 @@ The frontend uses **TanStack Query** to manage server state.
 - **Query Keys**: Standardized keys (e.g., `["/api/bookings"]`) are used for automatic cache invalidation.
 - **Mutations**: Every "POST/PATCH" request automatically invalidates relevant query keys, ensuring the UI (especially the calendar) is always accurate across multiple open browsers.
 
+### 7.6 Advanced Technical Topics
+- **Relational Integrity**: How the `storage.ts` layer handles complex joins across 5+ tables.
+- **Session Lifecycle**: Cookie expiration policies and CSRF protection measures.
+- **Error Propagation**: Standardized JSON error response format across the entire API.
+
 ---
 *End of Document 7 - Technical Specification*

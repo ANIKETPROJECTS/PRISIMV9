@@ -18,7 +18,7 @@ When a user opens the "New Booking" dialog, a sequence of background validations
 1.  **Selection**: The user selects a Date, Room, Customer, and Project.
 2.  **Time Definition**: Start and End times are set. The system supports 24-hour time entry.
 3.  **Staffing**: An Editor is assigned from the roster.
-4.  **Conflict Validation**: As the user fills the form, the system performs real-time checks (see section 3.3).
+4.  **Conflict Validation**: As the user fills the form, the system performs real-time checks.
 
 ### 3.3 The Conflict Detection Engine
 This is the most critical piece of business logic in PRISM. It prevents the expensive mistake of double-booking resources. The engine (implemented in `server/storage.ts`) performs three parallel checks:
@@ -65,7 +65,12 @@ In the studio world, billing is rarely final on the first try. Clients request c
 #### C. Cancellation Policy
 To maintain financial compliance, Chalans cannot be deleted. They must be "Cancelled." This requires a mandatory `cancelReason`. The Chalan number is preserved in the system but marked as void, ensuring no "missing" numbers in the financial sequence.
 
-### 3.7 Operations Audit: Booking Logs
+### 3.7 Detailed Operational Scenarios
+- **Overnight Bookings**: The system correctly calculates durations for sessions crossing the midnight threshold.
+- **Break Time Logic**: Support for both fixed (e.g., "1 hour") and variable (e.g., "Lunch & Dinner") break deductions.
+- **Status Locking**: Once a Chalan is generated, the underlying booking is locked to prevent accidental time changes that would invalidate the bill.
+
+### 3.8 Operations Audit: Booking Logs
 Every single change to an operational record is logged in the `booking_logs` table.
 - **What is Logged**: The user who made the change, the timestamp, and a JSON-serialized diff of what changed (e.g., "Status changed from Tentative to Confirmed").
 - **Why it matters**: This transparency is essential for resolving disputes like "Who moved my booking?" or "When was this session cancelled?".

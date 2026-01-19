@@ -16,7 +16,7 @@ Designed for the high-pressure environment of a studio floor, PRISM uses a Usern
 - **Persistence**: Sessions are stored in the PostgreSQL database using `connect-pg-simple`. This means users stay logged in even if the server process is restarted.
 - **Encryption**: Cookies are signed using a server-side `SESSION_SECRET` to prevent tampering.
 
-### 5.3 Granular Permission Matrix (RBAC)
+### 5.3 Granular Permission Model (RBAC)
 PRISM features a highly sophisticated Role-Based Access Control (RBAC) system. Permissions are not just "Admin" or "User"; they are granular down to the action level.
 
 #### A. The Four Permission Tiers
@@ -48,6 +48,11 @@ The `history` module provides a searchable timeline of all system events, allowi
 
 ### 5.5 Multi-Tenant Data Isolation
 PRISM supports a "Company" structure. Users and Master data are scoped to a specific `companyId`. This ensures that in environments where multiple business units share the same server, data remains strictly isolated.
+
+### 5.6 Administrative Utilities
+- **User Management**: Creating, updating, and inactivating system users.
+- **System Diagnostics**: Internal endpoints to monitor database health and session counts.
+- **Security PIN Reset**: Admin-only capability to help users recover their accounts.
 
 ---
 *End of Document 5 - Security & Administration*

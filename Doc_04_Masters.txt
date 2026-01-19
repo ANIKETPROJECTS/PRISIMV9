@@ -52,5 +52,10 @@ Similar to rooms, editors can have an `ignoreConflict` flag. This is used for se
 #### C. Tenure Tracking
 PRISM tracks `joinDate` and `leaveDate`. This data is integrated with the reporting module to calculate tenure-based utilization and staff turnover metrics.
 
+### 4.6 Data Integrity Rules (Master Controls)
+- **Unique Constraints**: Names and identifiers are strictly unique to prevent duplicate entries.
+- **Relational Locking**: Master records cannot be deleted if they are referenced by active operational data (Bookings, Chalans).
+- **Validation Schemas**: All Master entries are validated against strict Zod schemas on both frontend and backend.
+
 ---
 *End of Document 4 - Masters Module*

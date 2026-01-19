@@ -38,5 +38,10 @@ Every report in PRISM is built for interoperability.
 - **Excel/CSV Export**: Utilizing the `xlsx` library, every report can be exported as a native Excel file.
 - **Format Consistency**: Exports maintain the same headers and data types as the on-screen view, allowing accountants to drop them directly into external ERP or Tally software without manual reformatting.
 
+### 6.6 Advanced Analytical Insights
+- **Seasonality Tracking**: Identify months or quarters with the highest studio activity.
+- **Revenue Projection**: Estimate future income based on the "Confirmed" booking pipeline.
+- **Staff Efficiency**: Cross-reference editor utilization with chalan generation speed.
+
 ---
 *End of Document 6 - Reports & Intelligence*

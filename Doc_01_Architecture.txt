@@ -47,11 +47,22 @@ PRISM's technical foundation is comprised of carefully selected, modern technolo
 - **Zod**: A "TypeScript-first" schema declaration and validation library. It is used to validate every single form input on the frontend and every API request on the backend.
 - **Vite**: The build engine. It provides ultra-fast development reloads and highly optimized production bundles.
 
-### 1.5 System Scalability & Extensibility
+### 1.5 Detailed Internal Communication Flows
+The communication between layers is standardized using RESTful principles.
+- **Request Flow**: A user interaction on the frontend triggers a TanStack Query mutation. The request is sent with an `application/json` payload and the session cookie.
+- **Validation Flow**: The backend receives the request. Before any logic is executed, the `zod` schema parses the body. If an error is found, a structured JSON error response is returned, which the frontend automatically displays as a toast notification.
+- **Response Flow**: Upon success, the backend returns the updated record. The frontend updates its local cache, and any other components viewing that data (like the calendar) are instantly updated.
+
+### 1.6 System Scalability & Extensibility
 PRISM is built with the future in mind. 
 - **Modular Routes**: Adding a new feature (like a "Quality Control" module) is as simple as defining a new table in the schema and a new route file in the server.
 - **API First**: Because the system is built as a REST API, a mobile app or a client-facing portal could be built in the future to interact with the same backend without any changes to the core logic.
 - **Container Readiness**: The application is designed to be environment-agnostic. By changing the `.env` variables, it can easily move from a local developer machine to a cloud-based production server.
+
+### 1.7 Architectural Design Decisions
+- **Why PostgreSQL?**: Compared to NoSQL solutions, Postgres provides the strict relational mapping required for complex booking conflict logic.
+- **Why Drizzle?**: It allows for writing "SQL-like" TypeScript code without the overhead of heavy abstractions, ensuring high-performance database interactions.
+- **Why React-Query?**: It abstracts away the complexities of "loading" and "error" states, allowing developers to focus on building the UI.
 
 ---
 *End of Document 1 - System Architecture*
