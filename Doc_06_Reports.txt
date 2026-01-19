@@ -1,0 +1,42 @@
+# 6. PRISM: Reports & Analytical Intelligence
+## Comprehensive Intelligence Manual
+
+### 6.1 Data-Driven Studio Management
+The Reports module transforms raw operational data from the PRISM database into actionable business intelligence. By aggregating thousands of booking and billing records, it provides studio owners with the insights needed to optimize space, manage staff, and maximize revenue.
+
+### 6.2 The Conflict Audit Intelligence
+While the booking engine prevents conflicts in real-time, the **Conflict Report** provides a macro-view of scheduling health.
+- **Proactive Resolution**: Lists all overlapping requests (especially Tentative vs. Confirmed) across a custom time window.
+- **Resource Bottlenecks**: Identifies which rooms or editors are consistently over-requested, signaling a need for resource expansion.
+
+### 6.3 Operational Utilization Analytics
+This is the "Efficiency Engine" of the studio.
+
+#### A. Editor Utilization Report
+- **Billable vs. Available**: Calculates the percentage of an editor's shift that was actually billed to a client.
+- **Specialization Analysis**: Identifies if certain types of editors (e.g., VFX artists) are under-utilized compared to others (e.g., Video Editors).
+
+#### B. Room Occupancy Heatmaps
+- **Peak Hour Analysis**: Shows which times of day and days of the week the studio is at capacity.
+- **Room Type Profitability**: Helps identify which facility types (e.g., Sound Mixing vs. DI) generate the most billable hours.
+
+### 6.4 Financial Reporting & Chalan Audits
+Integrated directly with the billing module, these reports provide a clear picture of the studio's financial health.
+
+#### A. Chalan Summary Report
+- **Revenue by Customer**: Lists the total billed amount per client organization.
+- **Project-wise Billing**: Breaks down revenue by individual film, ad, or series.
+
+#### B. The Revision Audit
+A specialized report that tracks how often Chalans are revised. High revision rates can signal operational inefficiencies in data entry or client communication.
+
+#### C. Cancellation Tracking
+Analyzes the reasons for booking and chalan cancellations. This is crucial for identifying "Churn" and improving client retention strategies.
+
+### 6.5 Data Export & External Analysis
+Every report in PRISM is built for interoperability.
+- **Excel/CSV Export**: Utilizing the `xlsx` library, every report can be exported as a native Excel file.
+- **Format Consistency**: Exports maintain the same headers and data types as the on-screen view, allowing accountants to drop them directly into external ERP or Tally software without manual reformatting.
+
+---
+*End of Document 6 - Reports & Intelligence*

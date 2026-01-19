@@ -1,0 +1,57 @@
+# 1. PRISM: Introduction & System Architecture
+## Comprehensive Technical Manual
+
+### 1.1 Project Overview
+PRISM (Post-Production Management System) is an enterprise-grade studio management platform designed specifically for high-velocity post-production environments. In an industry where specialized resources like Sound Suites, VFX workstations, and Color Grading rooms are high-value assets, PRISM acts as the centralized coordination layer. It integrates scheduling, resource allocation, financial documentation, and reporting into a single, cohesive ecosystem.
+
+The system is engineered to solve the "resource-time" bottleneck. By providing real-time visibility into room and editor availability, it prevents the common industry pitfalls of double-booking, idle resource time, and billing leakages. PRISM replaces disparate tracking methods—often a mix of whiteboards, calendar apps, and spreadsheets—with a robust, relational data model that ensures every billable minute is tracked, validated, and accounted for.
+
+### 1.2 The "Single Source of Truth" Philosophy
+At the core of PRISM's architecture is the principle of a **Single Source of Truth (SSOT)**. This philosophy dictates that every piece of data—be it a customer's GST number, a room's technical capacity, or a booking's status—is stored in exactly one place and defined by one unified schema.
+
+- **Schema-Driven Development**: The database schema (defined in TypeScript via Drizzle ORM) is the definitive source for data structure. This schema automatically generates the TypeScript interfaces used by the frontend and the Zod validation objects used by the backend.
+- **Transactional Integrity**: By leveraging PostgreSQL's ACID compliance, PRISM ensures that complex operations (like splitting a booking or revising a chalan) are atomic. If any part of a multi-step update fails, the entire transaction is rolled back, preventing "partially updated" or corrupt data.
+- **Relational Governance**: The system enforces strict foreign key relationships. For example, a Chalan cannot exist without a valid Customer ID, and a Booking cannot be assigned to an Editor who doesn't exist in the Master roster.
+
+### 1.3 High-Level Component Architecture
+PRISM is architected using a modern 3-tier decoupling strategy, ensuring that the presentation, logic, and storage layers are independently manageable yet seamlessly integrated.
+
+#### A. The Presentation Layer (React Frontend)
+The frontend is a highly reactive Single Page Application (SPA) built with React 18 and Vite.
+- **UI Architecture**: Uses a atomic design approach, where smaller UI primitives (Buttons, Inputs) are composed into complex molecules (Booking Cards, Chalan Invoices).
+- **State Management**: Rather than using a complex global state like Redux, PRISM utilizes **Server State Management**. TanStack Query (React Query) handles the caching, invalidation, and synchronization of data between the browser and the API.
+- **Responsive Design**: Built with Tailwind CSS, the interface is optimized for both desktop "Command Center" views (large calendars) and mobile "On-the-go" checks for studio managers.
+
+#### B. The API & Logic Layer (Node.js/Express)
+The backend is a robust RESTful API that handles the heavy lifting of business logic.
+- **Stateless Design**: Each request contains all the information needed to process it (via session tokens), allowing for easier horizontal scaling.
+- **Middleware Chain**: Every request passes through a series of security and validation gates:
+    1.  **Authentication**: Verifies the session validity.
+    2.  **Authorization (RBAC)**: Checks the user's granular permissions for that specific module.
+    3.  **Validation (Zod)**: Ensures the incoming JSON payload perfectly matches the expected structure and data types.
+- **Controller-Storage Pattern**: Routes handle the HTTP interface (params, body, status codes), while the "Storage" layer handles the actual data persistence logic, separating the "How we talk" from "What we do with data."
+
+#### C. The Persistence Layer (PostgreSQL)
+The data layer uses PostgreSQL, the industry standard for relational reliability.
+- **Normalized Schema**: Designed to minimize redundancy and maximize query performance.
+- **Constraint Enforcement**: Uses native database constraints (Unique, Not Null, Check) as the final line of defense for data quality.
+- **Session Persistence**: Sessions are not stored in memory (which would be lost on server restart) but are persisted in a dedicated `sessions` table in the database.
+
+### 1.4 Detailed Technology Stack Breakdown
+PRISM's technical foundation is comprised of carefully selected, modern technologies that balance performance with developer efficiency.
+
+- **TypeScript**: The entire codebase is written in TypeScript. This provides "compile-time" safety, catching potential bugs (like passing a string to a function that expects a number) before the code even runs.
+- **React 18**: Features like Concurrent Mode allow the UI to stay responsive even during complex background data re-fetches.
+- **Tailwind CSS v4**: A revolutionary utility-first CSS framework. It allows for rapid UI building without writing custom CSS files, resulting in a cleaner codebase and faster load times.
+- **Drizzle ORM**: Unlike older, heavier ORMs, Drizzle is "Headless" and lightweight. It provides the best of both worlds: the type safety of TypeScript and the performance/flexibility of raw SQL.
+- **Zod**: A "TypeScript-first" schema declaration and validation library. It is used to validate every single form input on the frontend and every API request on the backend.
+- **Vite**: The build engine. It provides ultra-fast development reloads and highly optimized production bundles.
+
+### 1.5 System Scalability & Extensibility
+PRISM is built with the future in mind. 
+- **Modular Routes**: Adding a new feature (like a "Quality Control" module) is as simple as defining a new table in the schema and a new route file in the server.
+- **API First**: Because the system is built as a REST API, a mobile app or a client-facing portal could be built in the future to interact with the same backend without any changes to the core logic.
+- **Container Readiness**: The application is designed to be environment-agnostic. By changing the `.env` variables, it can easily move from a local developer machine to a cloud-based production server.
+
+---
+*End of Document 1 - System Architecture*

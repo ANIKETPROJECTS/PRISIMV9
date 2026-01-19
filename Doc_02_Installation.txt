@@ -1,0 +1,116 @@
+# 2. PRISM: Installation & Environment Configuration
+## Comprehensive Deployment Manual
+
+### 2.1 Deployment Philosophy
+The deployment of PRISM is designed to be deterministic and repeatable. By utilizing industry-standard tools like Node.js, npm, and PostgreSQL, the application can be hosted on a wide range of infrastructure, from a dedicated local server in the studio to a scalable cloud instance (AWS, DigitalOcean, or Azure). The goal is a "Zero-Touch" deployment where the environment configuration is handled entirely through environment variables.
+
+### 2.2 Infrastructure Prerequisites
+Before beginning the installation, ensure the target server meets the following minimum requirements:
+
+- **Operating System**: A Linux distribution is highly recommended for production (Ubuntu 22.04 LTS is the gold standard). macOS and Windows (via WSL2) are fully supported for development and testing.
+- **CPU**: 2 Cores (minimum) to handle the asynchronous nature of Node.js and the concurrent tasks of the PostgreSQL engine.
+- **Memory (RAM)**: 4GB minimum. While the application is efficient, the database engine and the Vite build process benefit significantly from 8GB+ in high-volume environments.
+- **Storage**: SSD-based storage is mandatory for the database layer to ensure low-latency booking conflict checks.
+
+### 2.3 Required Software Runtimes
+The following software components must be pre-installed on the host system:
+
+1.  **Node.js v20.x**: The application is built for the "Iron" Long Term Support (LTS) release of Node.js. Version 20 provides the stable API and performance required for PRISM.
+2.  **npm (Node Package Manager)**: Usually bundled with Node.js, used to manage all application dependencies.
+3.  **PostgreSQL v14+**: The primary relational database engine.
+4.  **Process Manager (PM2)**: A production process manager for Node.js applications that handles automatic restarts and log rotation.
+
+### 2.4 Detailed PostgreSQL Configuration
+The database is the most critical part of the installation. Follow these steps precisely:
+
+#### A. Installation
+```bash
+# For Ubuntu/Debian
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+```
+
+#### B. Service Verification
+Ensure the service is active and set to start on boot:
+```bash
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+
+#### C. Secure Role & Database Setup
+It is a security best practice to never use the `postgres` superuser for daily application operations.
+1. Access the SQL prompt: `sudo -u postgres psql`
+2. Create a dedicated database for PRISM: `CREATE DATABASE prism_prod;`
+3. Create a restricted service user: `CREATE USER prism_app_user WITH PASSWORD 'choose_a_complex_password';`
+4. Grant ownership: `ALTER DATABASE prism_prod OWNER TO prism_app_user;`
+5. Connect to the new database: `\c prism_prod`
+6. Ensure the user has schema rights: `GRANT ALL ON SCHEMA public TO prism_app_user;`
+
+### 2.5 Application Deployment Sequence
+Once the runtimes are ready, follow this sequence to deploy the PRISM application:
+
+#### Step 1: Clone & Preparation
+```bash
+git clone <repository_url> /opt/prism
+cd /opt/prism
+```
+
+#### Step 2: Dependency Installation
+```bash
+npm install
+```
+*Note: This command installs both the production dependencies (Express, Drizzle, etc.) and the development tools (TypeScript, Vite) needed for the build process.*
+
+#### Step 3: Environment Configuration
+Create the `.env` file in the project root. This file contains the "secrets" that the application needs to run.
+```env
+# The connection string follows the pattern: 
+# postgres://[user]:[password]@[host]:[port]/[database]
+DATABASE_URL=postgres://prism_app_user:choose_a_complex_password@localhost:5432/prism_prod
+
+# A long, random string used to sign session cookies. 
+# Do not share this or commit it to version control.
+SESSION_SECRET=a_very_long_and_random_cryptographic_string
+
+# Set to 'production' to enable optimizations and disable debugging logs.
+NODE_ENV=production
+
+# The port the Express server will listen on.
+PORT=5000
+```
+
+#### Step 4: Schema Syncing
+Instead of traditional migrations, PRISM uses Drizzle's "Push" strategy for safety and speed. This command synchronizes your database schema with the TypeScript definitions in `shared/schema.ts`.
+```bash
+npm run db:push
+```
+
+#### Step 5: Production Build
+Compile the application into optimized JavaScript and bundle the React frontend:
+```bash
+npm run build
+```
+This process creates a `dist/` directory. `dist/index.cjs` is the single entry point for the production server.
+
+#### Step 6: Process Management with PM2
+To ensure the application stays online 24/7, use PM2:
+```bash
+# Install PM2 globally if not already present
+npm install -g pm2
+
+# Start the application
+pm2 start dist/index.cjs --name "prism-server"
+
+# Generate a startup script to survive server reboots
+pm2 startup
+pm2 save
+```
+
+### 2.6 Post-Installation Verification
+After the deployment, verify the system's health:
+1.  **Check Logs**: `pm2 logs prism-server`. Look for the message "[express] serving on port 5000".
+2.  **Database Connection**: Try to log in with the default administrator account (if seeded) or create the first company via the `/api/admin/companies` endpoint if performing a fresh "Greenfield" installation.
+3.  **Frontend Access**: Open a web browser and navigate to `http://<server_ip>:5000`. You should see the PRISM login screen.
+
+---
+*End of Document 2 - Installation & Configuration*

@@ -1,0 +1,53 @@
+# 5. PRISM: Security, Permissions & Administration
+## Comprehensive Governance Manual
+
+### 5.1 Security Philosophy
+The PRISM security model is designed for a multi-user environment where data integrity and confidentiality are paramount. It operates on a "Zero-Trust" principle at the API level, ensuring that no request is processed without valid authentication and explicit authorization.
+
+### 5.2 Authentication Architecture
+PRISM uses a robust, session-based authentication system.
+
+#### A. PIN-Based Access
+Designed for the high-pressure environment of a studio floor, PRISM uses a Username + Security PIN combination.
+- **Why PINs?**: Studio environments often require users to move between workstations. PINs offer a faster, yet secure, alternative to complex passwords in internal networks.
+- **Security PIN Enforcement**: PINs are never sent back to the client. The backend validates them and establishes a secure session.
+
+#### B. Session Management
+- **Persistence**: Sessions are stored in the PostgreSQL database using `connect-pg-simple`. This means users stay logged in even if the server process is restarted.
+- **Encryption**: Cookies are signed using a server-side `SESSION_SECRET` to prevent tampering.
+
+### 5.3 Granular Permission Matrix (RBAC)
+PRISM features a highly sophisticated Role-Based Access Control (RBAC) system. Permissions are not just "Admin" or "User"; they are granular down to the action level.
+
+#### A. The Four Permission Tiers
+For every module and section, a user can be granted:
+1.  **View**: Can see the data but cannot change anything.
+2.  **Create**: Can add new records (e.g., make a new booking).
+3.  **Edit**: Can modify existing records.
+4.  **Delete**: Can remove records (highly restricted).
+
+#### B. Predefined Roles
+- **Admin**: "Super-user" with unrestricted access to all modules, settings, and logs.
+- **GST / Account**: Full access to financial modules and master data, but restricted administrative rights.
+- **Non-GST / Operation**: Can manage bookings and schedules but cannot view chalan amounts or project financials.
+
+#### C. The "Custom" Role
+The most powerful feature of the RBAC system. Administrators can create "Custom" profiles where they toggle permissions for every single page independently. This allows for specialized roles like "Night Shift Manager" or "Junior Accountant."
+
+### 5.4 Data Integrity & Audit Trails
+Every action in PRISM leaves a digital footprint.
+
+#### A. Booking & Audit Logs
+Whenever a booking or chalan is modified, the system records:
+- **Who**: The user ID of the person performing the action.
+- **When**: A precise timestamp.
+- **What**: A JSON diff showing the "Before" and "After" state of the record.
+
+#### B. User Activity History
+The `history` module provides a searchable timeline of all system events, allowing administrators to reconstruct the sequence of events during scheduling disputes or financial audits.
+
+### 5.5 Multi-Tenant Data Isolation
+PRISM supports a "Company" structure. Users and Master data are scoped to a specific `companyId`. This ensures that in environments where multiple business units share the same server, data remains strictly isolated.
+
+---
+*End of Document 5 - Security & Administration*

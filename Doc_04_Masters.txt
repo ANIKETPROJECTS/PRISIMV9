@@ -1,0 +1,56 @@
+# 4. PRISM: Masters Module & Data Governance
+## Comprehensive Data Management Manual
+
+### 4.1 Masters: The Structural Foundation
+The Masters module is the repository for all long-lived, foundational data within PRISM. This data—Clients, Staff, Projects, and Facilities—forms the lookup tables used by every other part of the system. High-quality master data is essential for accurate scheduling and financial reporting.
+
+### 4.2 Customer Master & Relationship Hierarchy
+The `customers` table is the primary billing entity. In PRISM, a customer represents an organization (e.g., a Production House or Film Studio).
+
+#### A. Organizational Data
+- **Legal Identity**: Stores legal names, GST numbers (crucial for tax compliance), and billing addresses.
+- **Financial Status**: Includes flags for `isActive`. Inactivating a customer prevents new bookings but preserves their financial history.
+
+#### B. Contact Management (Customer Contacts)
+A customer organization often has multiple representatives. PRISM uses a 1:N relationship with the `customer_contacts` table.
+- **Point of Contact (POC)**: Stores individual names, designations (Producer, Director, Accountant), and direct phone numbers.
+- **The Primary POC**: Each client can have one "Primary" contact. The system uses this person's details as the default recipient for chalans and booking confirmations.
+
+### 4.3 Project Master & Production Lifecycle
+Projects are the billable units within PRISM. Every project is strictly linked to a Customer.
+
+#### A. Project Categorization
+Standardization of project types ensures meaningful business analytics.
+- **Type Enums**: Movie, Serial, Web Series, Ad, Teaser, Trilogy.
+- **Workflow Flags**:
+    - `hasChalanCreated`: Indicates if any billing has been initiated.
+    - `hasInvoiceCreated`: Indicates if the financial cycle is completed.
+
+#### B. Active vs. Archive
+When a project finishes, it shouldn't be deleted. Instead, it is marked as `isActive = false`. This removes it from the "New Booking" dropdowns while ensuring that old reports still show accurate data.
+
+### 4.4 Resource Master: Rooms & Facilities
+Rooms represent the physical or virtual spaces where work happens.
+
+#### A. Room Attributes
+- **Room Types**: Sound, Music, VFX, Client Office, Editing, Dubbing, Mixing. These categories are used for specialization matching.
+- **Technical Capacity**: Stores how many people the room can accommodate.
+- **Conflict Governance**: The `ignoreConflict` boolean allows certain spaces (like shared production offices) to be overbooked without triggering system warnings.
+
+#### B. Operational Status
+Rooms can be toggled as "Inactive" for maintenance or decommissioning without affecting historical booking logs.
+
+### 4.5 Human Resource Master: Editors & Specialists
+The `editors` table manages the studio's most valuable asset: its technical talent.
+
+#### A. Specialist Classification
+Editors are categorized by their technical domain (Video, Audio, VFX, Colorist, DI). This ensures that schedulers can easily filter for the right talent for a specific room type.
+
+#### B. Conflict Defaulting
+Similar to rooms, editors can have an `ignoreConflict` flag. This is used for senior staff or supervisors who might need to oversee multiple rooms simultaneously.
+
+#### C. Tenure Tracking
+PRISM tracks `joinDate` and `leaveDate`. This data is integrated with the reporting module to calculate tenure-based utilization and staff turnover metrics.
+
+---
+*End of Document 4 - Masters Module*
