@@ -1,100 +1,147 @@
 # PRISM - Post-Production Management System
+## Project Documentation & Technical Specification
 
-A comprehensive studio management software designed for post-production houses to manage operations, masters, reports, and administrative utilities.
+### 1. Introduction
+PRISM (Post-Production Management System) is a robust, enterprise-grade studio management solution specifically engineered for post-production houses. It streamlines complex scheduling, billing, and resource management tasks, providing a unified interface for studio administrators, accountants, and operations teams.
 
-## 1. Installation Process
+---
 
-### Prerequisites
-- Node.js (v20 or higher)
-- PostgreSQL (v14 or higher)
-- npm or yarn
+### 2. Full Installation & Server Setup Guide
 
-### Server Setup
-1. **Clone the repository**:
+#### 2.1 Server Requirements
+- **Operating System**: Linux (Ubuntu 22.04+ recommended), macOS, or Windows (via WSL2).
+- **Runtime**: Node.js v20.x or higher.
+- **Database**: PostgreSQL v14.x or higher.
+- **Memory**: Minimum 2GB RAM.
+- **Storage**: SSD recommended for database performance.
+
+#### 2.2 PostgreSQL Database Setup
+1. **Install PostgreSQL**:
    ```bash
-   git clone <repository-url>
-   cd prism-system
+   sudo apt install postgresql postgresql-contrib
+   ```
+2. **Create Database User & Schema**:
+   Access the PostgreSQL prompt:
+   ```bash
+   sudo -u postgres psql
+   ```
+   Execute the following SQL commands:
+   ```sql
+   CREATE DATABASE prism_db;
+   CREATE USER prism_admin WITH PASSWORD 'secure_password_here';
+   GRANT ALL PRIVILEGES ON DATABASE prism_db TO prism_admin;
+   \c prism_db
+   GRANT ALL ON SCHEMA public TO prism_admin;
    ```
 
-2. **Install Dependencies**:
+#### 2.3 Application Deployment
+1. **Clone & Install**:
    ```bash
+   git clone <repository-url> prism
+   cd prism
    npm install
    ```
-
-3. **Database Configuration**:
-   Create a `.env` file in the root directory and add your PostgreSQL connection string:
+2. **Environment Configuration**:
+   Create a `.env` file:
    ```env
-   DATABASE_URL=postgres://username:password@localhost:5432/prism_db
+   DATABASE_URL=postgres://prism_admin:secure_password_here@localhost:5432/prism_db
+   NODE_ENV=production
+   SESSION_SECRET=a_very_long_random_string_here
    ```
-
-4. **Initialize Database**:
-   Push the schema to your PostgreSQL instance using Drizzle ORM:
+3. **Initialize Schema**:
+   PRISM uses Drizzle ORM for schema management. Sync the database structure:
    ```bash
    npm run db:push
    ```
-
-5. **Build the Project**:
+4. **Build Production Assets**:
+   Compile the React frontend and TypeScript backend:
    ```bash
    npm run build
    ```
-
-6. **Run the Server**:
+5. **Process Management (PM2)**:
+   It is recommended to use PM2 to keep the server running:
    ```bash
-   npm start
+   npm install -g pm2
+   pm2 start dist/index.cjs --name prism-app
+   pm2 save
    ```
-   The application will be available at `http://localhost:5000`.
 
-## 2. Project Features
+---
 
-### Operations
-- **Booking Management**: Centralized calendar for scheduling rooms and editors with real-time conflict detection.
-- **Leave Entry**: Track editor availability and planned absences.
-- **Chalan Management**: Generate, revise, and cancel billing documents (chalans) based on project bookings.
+### 3. Detailed Project Features
 
-### Masters
-- **Customer Management**: Maintain a database of clients and their primary contacts.
-- **Project Management**: Track movies, serials, ads, and other project types.
-- **Room Management**: Configure studio rooms (Sound, VFX, Editing, etc.) with capacity and conflict rules.
-- **Editor Management**: Manage a roster of internal and external editors across various specializations.
+#### 3.1 Operations Module
+- **Unified Booking Calendar**: A high-density calendar view (Daily/Monthly) showing room and editor availability. Features drag-and-drop scheduling and instant conflict validation.
+- **Conflict Detection Engine**: Sophisticated logic that prevents overlapping bookings for the same room or the same editor across different rooms.
+- **Leave Management**: Dedicated interface for editors to log planned absences, which automatically blocks their availability in the booking system.
+- **Chalan (Billing) Lifecycle**:
+  - **Creation**: Generate chalans directly from completed bookings, pulling project data automatically.
+  - **Revision Tracking**: Comprehensive history of chalan modifications with versioning and audit trails.
+  - **Cancellation Logic**: Secure cancellation process requiring reasons, with restricted access for accounting roles.
 
-### Reports
-- **Conflict Reports**: Identify scheduling overlaps for rooms or editors.
-- **Booking Reports**: Export detailed booking logs for specific periods.
-- **Utilization Reports**: Analyze editor and room usage efficiency.
-- **Chalan Reports**: Summary of billing activities and financial status.
+#### 3.2 Masters Module (Core Data)
+- **Customer Master**: Centralized repository for client organizations, including GST details, billing addresses, and multiple point-of-contact management.
+- **Project Master**: Hierarchical tracking of project types (Movies, Serials, Web Series) linked to specific customers.
+- **Resource Management (Rooms & Editors)**: Detailed configuration of studio assets, including specialization types (e.g., Sound, VFX, Colorist) and capacity constraints.
 
-### Utility
-- **User Management**: Create and manage system users.
-- **Permissions**: Granular role-based access control (RBAC) to restrict access to specific modules or actions (Create, Edit, Delete).
+#### 3.3 Reports & Analytics
+- **Utilization Reports**: Heatmaps and percentage-based analysis of room/editor usage.
+- **Financial Reports**: Exportable Chalan summaries for accounting reconciliation.
+- **Conflict Audit**: Retrospective reports identifying historical scheduling issues for process improvement.
 
-## 3. Code Structure
+#### 3.4 Utility & Administration
+- **Granular User Rights**: Administrators can define custom access levels. Permissions are split into:
+  - **View**: Read-only access to a section.
+  - **Create**: Permission to add new records.
+  - **Edit**: Permission to modify existing records.
+  - **Delete**: Restricted permission for data removal.
+- **Audit Logging**: Every booking change is logged with a timestamp, action type, and the ID of the user who performed it.
 
-The project follows a modern full-stack JavaScript architecture:
+---
 
-- **`/client`**: React-based frontend using Vite.
-  - **`/src/pages`**: Individual page components for each module.
-  - **`/src/components`**: Reusable UI components (Data Tables, Forms, Modals).
-  - **`/src/lib`**: Utility functions, API clients, and permission logic.
-- **`/server`**: Express.js backend.
-  - **`routes.ts`**: API endpoint definitions.
-  - **`storage.ts`**: Data access layer.
-  - **`db.ts`**: Database connection configuration.
-- **`/shared`**: Shared TypeScript types and Zod validation schemas.
-  - **`schema.ts`**: Drizzle ORM database schema definition.
+### 4. Technical Architecture & Code Structure
 
-## 4. Database Explanation
+#### 4.1 Technology Stack
+- **Frontend**: React 18, Tailwind CSS, Shadcn UI, TanStack Query (v5), Wouter (Routing).
+- **Backend**: Node.js, Express.js.
+- **Database Layer**: Drizzle ORM with PostgreSQL.
+- **Validation**: Zod (End-to-end type safety).
 
-The system uses PostgreSQL with Drizzle ORM for type-safe database interactions.
+#### 4.2 Directory Organization
+- **`/client`**: The React application.
+  - **`/src/pages`**: Page-level components (e.g., `booking.tsx`, `masters/customers.tsx`).
+  - **`/src/components`**: Reusable UI primitives and complex business components (e.g., `booking-form.tsx`).
+  - **`/src/hooks`**: Custom React hooks for authentication and permissions.
+- **`/server`**: The Express API.
+  - **`routes.ts`**: Contains ~1200 lines of API endpoint logic, including middleware-based permission checks.
+  - **`storage.ts`**: The Data Access Object (DAO) pattern implementation, isolating database queries from business logic.
+  - **`db.ts`**: Database connection pooling and configuration.
+- **`/shared`**: Universal definitions used by both client and server.
+  - **`schema.ts`**: The "Source of Truth" for the database structure and Zod validation schemas.
 
-### Key Tables
-- **`users`**: System credentials, roles, and profile information.
-- **`companies`**: Organization-level data for multi-tenant support.
-- **`customers` & `customer_contacts`**: Client records and their associated representatives.
-- **`projects`**: Specific assignments linked to customers.
-- **`rooms`**: Physical or virtual spaces where work is performed.
-- **`editors`**: Personnel assigned to work on projects.
-- **`bookings`**: The central transactional table linking rooms, editors, projects, and time slots.
-- **`chalans` & `chalan_items`**: Billing records and detailed line items for invoicing.
-- **`user_module_access`**: Stores permission mappings for role-based access.
+---
 
-The database utilizes Foreign Key constraints to ensure data integrity and uses PostgreSQL Enums for standardized status and type tracking.
+### 5. Database Schema & Data Modeling
+
+The database is designed with strict relational integrity using PostgreSQL's advanced features.
+
+#### 5.1 Core Entity Relationships
+- **Companies (1:N) Users**: Multi-tenant structure where each user belongs to a specific company.
+- **Customers (1:N) Projects**: Projects are scoped to specific clients.
+- **Bookings (N:1) Rooms/Editors/Projects**: The central junction table representing an event in time.
+- **Chalans (1:N) ChalanItems**: Line-item based billing documents.
+
+#### 5.2 Permission Model
+Access control is implemented via the `user_module_access` table. It maps `userId` to a `module` and `section`, storing booleans for `can_view`, `can_create`, `can_edit`, and `can_delete`. The backend `authMiddleware` and `requirePermission` functions enforce these rules on every API request.
+
+#### 5.3 Audit & Logs
+- **`booking_logs`**: Captured automatically by the `storage.createBooking` and `storage.updateBooking` methods.
+- **`chalan_revisions`**: Stores snapshots of changes when a billing document is revised.
+
+---
+
+### 6. Security Implementation
+- **PIN-Based Authentication**: Users log in using a unique username and a secure Security PIN.
+- **Session-Based Security**: Uses `express-session` with a PostgreSQL store (`connect-pg-simple`) for persistent, secure server-side sessions.
+- **Sensitive Data Isolation**: Passwords and PINs are excluded from all standard API responses using TypeScript's `omit` and manual sanitization in the routes layer.
+- **Input Validation**: All incoming API data is validated against Zod schemas before reaching the database, preventing SQL injection and data corruption.
