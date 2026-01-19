@@ -310,3 +310,113 @@ To update the system with new code:
 
 ---
 *This document serves as the authoritative guide for the PRISM Post-Production Management System. All code modifications should adhere to the architectural patterns defined herein.*
+
+#### 10. DETAILED MODULE-BY-MODULE FUNCTIONAL SPECIFICATION
+
+##### 10.1 Operations Deep-Dive: The Booking Engine Logic
+The booking engine is the most critical part of PRISM. It's not just a calendar; it's a complex validator that ensures studio resources are never double-booked.
+
+**10.1.1 Conflict Detection Algorithms**
+When a user attempts to create or update a booking, the backend executes the `checkBookingConflicts` method. This method performs three distinct checks:
+1.  **Room Overlap Check**:
+    The system queries the `bookings` table for any existing records where:
+    - The `roomId` matches the requested room.
+    - The `bookingDate` is the same.
+    - The time interval `[fromTime, toTime]` overlaps with the requested interval.
+    The overlap logic is mathematically defined as: `(RequestedFrom < ExistingTo) AND (RequestedTo > ExistingFrom)`.
+2.  **Editor Overlap Check**:
+    Even if a room is free, the assigned editor might be busy in another room. The system checks all rooms for the same editor on the same day within the same time window.
+3.  **Leave Overlap Check**:
+    The system consults the `editor_leaves` table. If the editor has a recorded leave (vacation, sick, etc.) that encompasses the booking date, a "Hard Conflict" is raised.
+
+**10.1.2 The "Repeat Booking" Feature**
+For long-running projects (e.g., a movie grade that takes 10 days), PRISM allows users to "Repeat" a booking.
+- **Pattern Matching**: Users can repeat daily, weekly, or for specific days.
+- **Bulk Validation**: The system validates *every* single occurrence in the repeat sequence. If even one day has a conflict, the system notifies the user and offers to skip the conflicting days while booking the rest.
+
+**10.1.3 Actual vs. Booked Time Tracking**
+Production often runs over or finishes early. PRISM tracks both:
+- **Booked Time**: The originally scheduled slot.
+- **Actual Time**: The time the session actually started and ended.
+- **Impact on Billing**: The Chalan module prioritizes "Actual Time" if provided, ensuring clients are billed for the exact duration of studio usage.
+
+##### 10.2 Masters Deep-Dive: Relational Integrity & Data Governance
+
+**10.2.1 Customer & Contact Management**
+Customers are stored with comprehensive metadata to support professional invoicing.
+- **Address & Tax Data**: Full billing address and GST/PAN fields are mandatory for financial modules.
+- **Contact Designations**: Contacts are categorized (e.g., "Director", "Post Producer"). This allows the system to intelligently pull the right person into the Chalan document.
+
+**10.2.2 Room & Editor Categorization**
+Resources are not just names; they have types that drive system behavior.
+- **Specialization Matching**: When booking a "DI Suite" (Digital Intermediate), the system can be configured to only suggest "Colorist" type editors.
+- **Room Capacity**: Prevents booking large teams into small edit suites.
+
+##### 10.3 Reports Deep-Dive: Data Intelligence & Exporting
+
+**10.3.1 The Conflict Audit Trail**
+The conflict report isn't just about current issues; it's a retrospective tool.
+- **Resolution Tracking**: Managers can see when a conflict was identified and how it was resolved (e.g., "Moved to Room 2" or "Editor replaced").
+
+**10.3.2 Financial Analytics (Chalan Reports)**
+The system aggregates chalan data to provide:
+- **Outstanding Balances**: Tracking which chalans have been issued but not yet converted to final invoices.
+- **Customer Lifetime Value (CLV)**: Identifying high-value clients based on historical billing data.
+
+**10.3.3 Utilization Heatmaps**
+Through data aggregation, the system can generate heatmaps showing peak usage times. This helps studio owners decide if they need more rooms or more staff during certain shifts.
+
+##### 10.4 Utility Deep-Dive: System Administration & RBAC
+
+**10.4.1 Granular Permission Matrix**
+PRISM's RBAC (Role-Based Access Control) is extremely granular.
+- **Modules**: Operations, Masters, Reports, Utility.
+- **Sections**: Every page (e.g., "Customer Master", "Booking Report") is a section.
+- **Permissions**: View, Create, Edit, Delete.
+- **Enforcement**:
+    - **UI Level**: The `usePermissions` hook hides buttons and menu items.
+    - **API Level**: The `requirePermission` middleware blocks unauthorized HTTP requests.
+
+**10.4.2 Audit Logging Mechanism**
+Every action leaves a footprint. The `booking_logs` table stores:
+- `action`: "CREATE", "UPDATE", "CANCEL", "DELETE".
+- `changes`: A JSON object showing exactly which fields changed (e.g., `{"status": {"old": "planning", "new": "confirmed"}}`).
+- `userId`: The person responsible for the change.
+
+#### 11. TECHNICAL SPECIFICATION FOR DEVELOPERS
+
+##### 11.1 Schema Definitions (Drizzle ORM)
+The database is defined in `shared/schema.ts`. Key highlights:
+- **Enums**: Used extensively for data consistency (`userRoleEnum`, `projectTypeEnum`, etc.).
+- **Relationships**: Defined using Drizzle's `relations` API, enabling nested queries (e.g., "Fetch Chalan with all its Items and the linked Customer").
+
+##### 11.2 State Management with TanStack Query
+The application uses a "Query Key" based caching strategy.
+- **Invalidation**: When a booking is updated, `queryClient.invalidateQueries({ queryKey: ["/api/bookings"] })` is called, triggering a background refresh of the calendar.
+- **Optimistic Updates**: For high-speed interactions, the UI reflects changes immediately while the server request completes in the background.
+
+##### 11.3 Form Validation with Zod & React Hook Form
+Every form in the system is backed by a Zod schema.
+- **Validation Rules**: Mandatory fields, character limits, and complex regex (e.g., 10-digit phone number validation).
+- **Error Handling**: Standardized error messages provided by `zod-validation-error`.
+
+##### 11.4 Backend Middleware Chain
+API requests follow a strict path:
+1.  **CORS/Parser**: Standard Express setup.
+2.  **Auth Middleware**: Extracts user ID and Role from the session.
+3.  **Permission Guard**: Checks if the user's role/permissions allow the requested action on the target module.
+4.  **Zod Parser**: Validates the request body against the expected schema.
+5.  **Controller Logic**: Interacts with `storage.ts` to perform database operations.
+
+#### 12. STEP-BY-STEP TROUBLESHOOTING GUIDE
+
+##### 12.1 Common Installation Issues
+- **PostgreSQL Connection Failures**: Ensure the `DATABASE_URL` in `.env` matches your local credentials and that PostgreSQL is running.
+- **Node Version Mismatch**: PRISM requires Node.js v20. Use `nvm` to switch versions if necessary.
+
+##### 12.2 Operation Debugging
+- **"Conflict Detected" even when room looks free**: Check for overlapping "Actual" times or "Ignore Conflict" flags on other bookings.
+- **Chalan not generating**: Ensure the booking is "Confirmed" and hasn't already been billed.
+
+---
+*End of Comprehensive Documentation.*
