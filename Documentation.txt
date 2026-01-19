@@ -1,233 +1,197 @@
 # PRISM - Post-Production Management System
-## Comprehensive Project Documentation & Technical Specification
+## COMPREHENSIVE TECHNICAL DOCUMENTATION & SYSTEM MANUAL
 
-### 1. Introduction
-PRISM (Post-Production Management System) is an enterprise-grade studio management solution specifically engineered for post-production houses. It streamlines complex scheduling, billing, and resource management tasks, providing a unified interface for studio administrators, accountants, and operations teams. The system is built with a focus on high-density information display, real-time conflict detection, and robust role-based access control.
+### 1. INTRODUCTION & HIGH-LEVEL SYSTEM ARCHITECTURE
 
----
+#### 1.1 SYSTEM OVERVIEW
+The PRISM (Post-Production Management System) is an enterprise-grade, integrated digital platform meticulously engineered to resolve the operational and administrative complexities inherent in professional post-production studios. In the high-stakes environment of film and media production, where time-sensitive workflows and high-value resource allocation are critical to profitability, PRISM serves as the central "nervous system." It provides a unified, real-time interface for studio administrators, operations managers, editors, and accounting departments to coordinate activities seamlessly.
 
-### 2. Full Installation & Server Setup Guide
+The system is designed to replace disparate spreadsheets and manual tracking methods with a robust, centralized database that handles everything from the initial booking request to the final financial chalan (billing document). By automating conflict detection and providing deep analytical reports, PRISM empowers studios to maximize their room and editor utilization while minimizing scheduling errors.
 
-#### 2.1 Server Requirements
-- **Operating System**: Linux (Ubuntu 22.04+ recommended), macOS, or Windows (via WSL2).
-- **Runtime**: Node.js v20.x or higher.
-- **Database**: PostgreSQL v14.x or higher.
-- **Memory**: Minimum 2GB RAM.
-- **Storage**: SSD recommended for database performance.
+#### 1.2 ARCHITECTURAL PHILOSOPHY
+The architecture of PRISM is built upon a modern, full-stack JavaScript/TypeScript paradigm. The primary engineering goal was to create a system that is highly reactive, strictly typed, and easily maintainable. 
 
-#### 2.2 PostgreSQL Database Setup
-1. **Install PostgreSQL**:
-   ```bash
-   # On Ubuntu/Debian
-   sudo apt update
-   sudo apt install postgresql postgresql-contrib
-   ```
-2. **Create Database User & Schema**:
-   Access the PostgreSQL prompt:
-   ```bash
-   sudo -u postgres psql
-   ```
-   Execute the following SQL commands to create the environment:
-   ```sql
-   CREATE DATABASE prism_db;
-   CREATE USER prism_admin WITH PASSWORD 'secure_password_here';
-   GRANT ALL PRIVILEGES ON DATABASE prism_db TO prism_admin;
-   \c prism_db
-   GRANT ALL ON SCHEMA public TO prism_admin;
-   ```
+- **Single Source of Truth (SSOT)**: The database schema, defined via Drizzle ORM, acts as the definitive reference point for the entire application. All data models, validation rules, and TypeScript interfaces are derived from this single source, ensuring that the frontend and backend are always in perfect synchronization.
+- **Layered Decoupling**: The application is strictly partitioned into three distinct layers:
+    - **Presentation Layer (React)**: Focused purely on UI rendering and user interaction.
+    - **Service Layer (Express/Storage)**: Handles business logic, data validation, and permission enforcement.
+    - **Persistence Layer (PostgreSQL)**: Manages data storage with high relational integrity.
+- **Reactive Synchronization**: Using TanStack Query, the frontend does not just "fetch" data; it synchronizes its local state with the server, providing optimistic updates and intelligent background refreshing to ensure users always see the latest information without manual page reloads.
 
-#### 2.3 Application Deployment
-1. **Clone & Install**:
-   ```bash
-   git clone <repository-url> prism
-   cd prism
-   npm install
-   ```
-2. **Environment Configuration**:
-   Create a `.env` file in the root directory:
-   ```env
-   DATABASE_URL=postgres://prism_admin:secure_password_here@localhost:5432/prism_db
-   NODE_ENV=production
-   SESSION_SECRET=a_very_long_random_string_here
-   ```
-3. **Initialize Schema**:
-   PRISM uses Drizzle ORM for schema management. Sync the database structure:
-   ```bash
-   npm run db:push
-   ```
-4. **Build Production Assets**:
-   Compile the React frontend and TypeScript backend:
-   ```bash
-   npm run build
-   ```
-5. **Process Management (PM2)**:
-   It is recommended to use PM2 to keep the server running:
-   ```bash
-   npm install -g pm2
-   pm2 start dist/index.cjs --name prism-app
-   pm2 save
-   ```
+#### 1.3 DETAILED TECHNOLOGY STACK
+The selection of technologies for PRISM was driven by the need for industrial-strength reliability and a developer-friendly ecosystem.
 
----
+**Frontend Infrastructure:**
+- **React v18**: Leverages the latest concurrent rendering features to maintain a highly responsive UI, even when handling large datasets in the Operations calendar.
+- **Tailwind CSS v4**: Provides a utility-first styling engine that ensures design consistency across hundreds of UI elements while keeping the final CSS bundle size minimal.
+- **Shadcn UI**: A collection of high-quality, accessible UI primitives (modals, dropdowns, form controls) that give PRISM its professional, enterprise-grade aesthetic.
+- **TanStack Query v5**: The "missing data-fetching library" for React, managing cache invalidation, loading states, and error handling for all API interactions.
+- **Wouter**: A minimalist routing library that provides high-speed client-side navigation with a very small memory footprint compared to traditional routers.
 
-### 3. Detailed Project Features
+**Backend Infrastructure:**
+- **Node.js**: Provides the event-driven, non-blocking I/O runtime required for high-concurrency API handling.
+- **Express.js**: A minimal and flexible web framework that serves as the backbone for the RESTful API endpoints.
+- **Passport.js & Express-Session**: Implements a secure, session-based authentication flow. Sessions are persisted in the PostgreSQL database, ensuring that logins remain active across server restarts.
+- **Zod**: Used for runtime schema validation. Every piece of data entering the system is validated against a Zod schema, preventing "dirty data" from reaching the database.
 
-#### 3.1 Operations Module
-The core engine of the studio, handling transactional data.
+**Persistence & Tooling:**
+- **PostgreSQL**: Chosen for its legendary reliability and support for complex relational queries, which are essential for the system's reporting and conflict detection engines.
+- **Drizzle ORM**: A modern TypeScript ORM that provides the type safety of an ORM with the performance and transparency of raw SQL.
+- **Vite**: The build tool and development server that provides near-instantaneous hot-module replacement (HMR) during the engineering process.
 
-- **Unified Booking Calendar**: 
-  - **Daily View**: Hour-by-hour breakdown of room usage.
-  - **Monthly View**: High-level availability overview.
-  - **Drag-and-Drop**: Reschedule events by moving them across time slots.
-  - **Quick Edit**: Instant modification of booking statuses (Planning, Tentative, Confirmed, Cancelled).
-- **Conflict Detection Engine**: 
-  - Validates room availability before saving.
-  - Validates editor availability across all rooms.
-  - Checks against "Ignore Conflict" flags for special cases.
-- **Leave Management**: 
-  - Interfaces for editors to log sick leave or vacation.
-  - Integrated with the booking engine to provide visual warnings if a leave overlaps with a session.
-- **Chalan (Billing) Lifecycle**:
-  - **Automated Generation**: Pulls data from `bookings`, `rooms`, and `editors` to generate a draft chalan.
-  - **Revision Tracking**: Every edit to a chalan creates a new `chalan_revision` entry, allowing users to see "Who changed What and When".
-  - **Cancellation Logic**: Requires a mandatory reason; once cancelled, the chalan is archived but remains searchable for audit.
+#### 1.4 GLOBAL SYSTEM COMPONENTS
+PRISM is organized into several high-level modules, each designed to handle a specific vertical of studio management:
 
-#### 3.2 Masters Module (Core Reference Data)
-- **Customer Master**: 
-  - Manage client organizations.
-  - Store billing preferences, GST numbers, and addresses.
-  - **Contact Management**: Multiple contacts per customer (e.g., Producer, Director, Production Manager) with designation tracking.
-- **Project Master**: 
-  - Project types: Movie, Serial, Web Series, Ad, Teaser, Trilogy.
-  - Status tracking (Active/Inactive).
-  - Linked directly to Customers for billing accuracy.
-- **Room Master**: 
-  - Room types: Sound, Music, VFX, Client Office, Editing, Dubbing, Mixing.
-  - Capacity settings and conflict rule configuration.
-- **Editor Master**: 
-  - Categorization: Video, Audio, VFX, Colorist, DI.
-  - Join/Leave date tracking.
-  - Performance and utilization history.
+1.  **The Operations Core**: The transactional heart of the system. This module manages the real-time calendar, scheduling conflict logic, and the transition of bookings into financial documents.
+2.  **The Masters Repository**: The static data management hub. It stores and organizes all reference entities, including client profiles, project hierarchies, studio room specifications, and the roster of technical staff (editors).
+3.  **The Intelligence Layer**: A suite of analytical tools designed to transform raw booking data into actionable insights, such as utilization heatmaps and conflict audits.
+4.  **The Administrative Console**: The control center for the platform, where administrators manage user accounts, roles, and granular permission mappings to ensure data security.
 
-#### 3.3 Reports & Analytics
-- **Conflict Reports**: Identify and resolve overlapping schedules before they cause production delays.
-- **Booking Reports**: Export custom data ranges to Excel/CSV for external analysis.
-- **Utilization Reports**: Statistical breakdown of room and editor billable vs. non-billable hours.
-- **Chalan Reports**: Financial overview of generated, paid, and pending chalans.
+### 2. DETAILED INSTALLATION & ENVIRONMENT CONFIGURATION
 
-#### 3.4 Utility & Administration
-- **Granular User Rights**: 
-  - Administrators can define custom access levels. 
-  - Permissions are split into: **View, Create, Edit, Delete**.
-  - Section-level control: e.g., a user can edit Bookings but only view Chalans.
-- **Audit Logging**: 
-  - `booking_logs` capture every state change.
-  - `user_module_access` ensures strictly enforced RBAC.
+#### 2.1 SERVER INFRASTRUCTURE PREPARATION
+To ensure optimal performance and stability of the PRISM system, the target environment must meet specific technical benchmarks.
 
----
+**Operating System**: Linux-based environments (Ubuntu 22.04 LTS or Debian 12 recommended) are preferred for production. macOS and Windows (via WSL2) are supported for development.
+**Hardware Specifications**: 
+- **CPU**: 2+ Cores recommended for concurrent request handling.
+- **RAM**: 4GB minimum (8GB recommended for larger studios with high reporting volume).
+- **Disk**: 20GB SSD for application files and database storage.
 
-### 4. Technical Architecture & Code Structure
+#### 2.2 POSTGRESQL DATABASE INITIALIZATION
+PRISM requires a dedicated PostgreSQL instance. Follow these steps for a secure setup:
 
-#### 4.1 Technology Stack
-- **Frontend**: 
-  - **React 18**: Component-based UI.
-  - **Tailwind CSS**: Utility-first styling with custom "elevate" interaction classes.
-  - **Shadcn UI**: Accessible primitive components.
-  - **TanStack Query (v5)**: Efficient server-state management and caching.
-  - **Wouter**: Lightweight client-side routing.
-- **Backend**: 
-  - **Node.js & Express.js**: High-performance API layer.
-  - **Passport.js**: Authentication strategies.
-  - **Express Session**: Secure session persistence.
-- **Database Layer**: 
-  - **Drizzle ORM**: Type-safe SQL generation and schema management.
-  - **PostgreSQL**: Reliable relational data storage.
-- **Validation**: 
-  - **Zod**: Schema validation for both frontend forms and backend API requests.
+1.  **Installation**:
+    ```bash
+    # Ubuntu/Debian
+    sudo apt update
+    sudo apt install postgresql postgresql-contrib
+    ```
+2.  **Service Management**:
+    ```bash
+    sudo systemctl start postgresql
+    sudo systemctl enable postgresql
+    ```
+3.  **Role & Database Creation**:
+    Log in as the postgres superuser:
+    ```bash
+    sudo -u postgres psql
+    ```
+    Execute the following secure SQL sequence:
+    ```sql
+    -- Create the production database
+    CREATE DATABASE prism_production;
+    
+    -- Create a dedicated application user
+    CREATE USER prism_service_user WITH PASSWORD 'your_strong_password_here';
+    
+    -- Assign privileges
+    GRANT ALL PRIVILEGES ON DATABASE prism_production TO prism_service_user;
+    
+    -- Connect to the new database to grant schema permissions
+    \c prism_production
+    GRANT ALL ON SCHEMA public TO prism_service_user;
+    ```
 
-#### 4.2 Directory Organization
-- **`/client`**: Frontend application source.
-  - **`/src/pages`**: 
-    - `booking.tsx`: Main calendar and operation hub.
-    - `chalan/index.tsx`: Billing list and management.
-    - `masters/`: Master data management pages.
-    - `utility/`: Administrative tools.
-  - **`/src/components`**: 
-    - `ui/`: Shared Shadcn components.
-    - `data-table.tsx`: Generic, sortable, and exportable data grid.
-    - `booking-form.tsx`: Complex multi-step scheduling form.
-  - **`/src/lib`**: 
-    - `queryClient.ts`: TanStack Query configuration.
-    - `permissions.ts`: Client-side RBAC enforcement.
-- **`/server`**: Backend application source.
-  - **`routes.ts`**: Central API router (~1200+ lines) containing all business logic endpoints.
-  - **`storage.ts`**: Interface-driven data access layer (`IStorage`) implementing all PostgreSQL queries.
-  - **`db.ts`**: Connection pooling and ORM initialization.
-  - **`index.ts`**: Server entry point and middleware configuration.
-- **`/shared`**: Code shared between frontend and backend.
-  - **`schema.ts`**: The single source of truth for the database schema, table definitions, and relationships.
+#### 2.3 APPLICATION DEPLOYMENT STEPS
+Once the database is ready, proceed with the application installation:
 
----
+1.  **Dependency Installation**:
+    Navigate to the project root and execute:
+    ```bash
+    npm install
+    ```
+    This will install all required Node.js modules including the specialized Drizzle ORM and Vite build tools.
 
-### 5. API Reference (Detailed)
+2.  **Environment Variable Configuration**:
+    Create a `.env` file in the root directory. This file is critical for the application's secure operation:
+    ```env
+    # Database Connection String
+    DATABASE_URL=postgres://prism_service_user:your_strong_password_here@localhost:5432/prism_production
+    
+    # Session Security (Generate a long random string)
+    SESSION_SECRET=a_highly_secure_random_string_generator_output
+    
+    # Environment Mode
+    NODE_ENV=production
+    
+    # Server Port (Default: 5000)
+    PORT=5000
+    ```
 
-#### 5.1 Authentication (`/api/auth`)
-- `POST /login`: Validates username, PIN, and company ID. Sets secure session.
-- `POST /logout`: Destroys server session and clears client cookies.
-- `GET /session`: Returns currently authenticated user details and their permissions.
+3.  **Database Schema Synchronization**:
+    PRISM uses a migration-less "Push" strategy for rapid development and stable production syncing. Execute:
+    ```bash
+    npm run db:push
+    ```
+    This command inspects your PostgreSQL database and updates the schema to match the `shared/schema.ts` definition without losing data.
 
-#### 5.2 Operations (`/api/bookings`, `/api/chalans`)
-- `GET /bookings`: Retrieves scheduled events with support for room, date, and status filters.
-- `POST /bookings`: Creates new events. Supports "Repeat Booking" logic for multi-day sessions.
-- `POST /bookings/check-conflicts`: Real-time validation endpoint used during scheduling.
-- `POST /chalans`: Finalizes billing documents. Generates unique chalan numbers.
-- `GET /chalans/:id/revisions`: Fetches the version history of a specific billing document.
+4.  **Production Compilation**:
+    Generate the optimized, minified production assets:
+    ```bash
+    npm run build
+    ```
+    This creates a `dist/` directory containing the compiled server-side TypeScript and the bundled React frontend.
 
-#### 5.3 Masters (`/api/customers`, `/api/projects`, `/api/rooms`, `/api/editors`)
-- Standard CRUD (Create, Read, Update, Delete) endpoints for all reference data.
-- Permission-guarded to prevent unauthorized data modification.
+5.  **Running the Service**:
+    For production, use a process manager like **PM2** to ensure the service restarts automatically if it crashes or the server reboots:
+    ```bash
+    # Install PM2 globally
+    npm install -g pm2
+    
+    # Start the application
+    pm2 start dist/index.cjs --name prism-production
+    
+    # Enable startup persistence
+    pm2 save
+    pm2 startup
+    ```
 
-#### 5.4 Admin & Utility (`/api/users`, `/api/reports`)
-- `GET /users`: List all system users with their roles (Admin, Account, GST, Non-GST, Custom).
-- `POST /users/:id/access`: Updates granular permissions for "Custom" role users.
-- `GET /reports/conflicts`: Generates a list of all current scheduling overlaps.
+### 3. OPERATIONS MODULE: BUSINESS LOGIC & WORKFLOWS
 
----
+#### 3.1 THE SCHEDULING HUB (BOOKING SYSTEM)
+The Booking system is the most complex component of PRISM, designed to handle the high-velocity scheduling needs of a post-production studio.
 
-### 6. Database Schema Deep-Dive
+**Core Workflow**:
+1.  **Request Initiation**: A booking begins with the selection of a Date, Room, and Project.
+2.  **Resource Allocation**: The user assigns an Editor to the session. The system pulls only "Active" editors from the Master roster.
+3.  **Temporal Definition**: Start and End times are defined. PRISM supports 24-hour operations, handling overnight sessions correctly in duration calculations.
+4.  **Conflict Validation (The Engine)**:
+    Before a booking is saved, the `checkBookingConflicts` method in `server/storage.ts` performs a multi-point inspection:
+    - **Room Conflict**: Checks if the selected room is already occupied during the requested interval.
+    - **Editor Conflict**: Checks if the assigned editor is already scheduled in another room.
+    - **Leave Check**: Interrogates the `editor_leaves` table to ensure the editor isn't on vacation or sick leave.
+    - **Override Mechanism**: Certain "Super-User" roles can check an "Ignore Conflict" flag for specialized overlapping sessions.
+5.  **Persistence & Audit**: Upon successful validation, the record is saved to the `bookings` table, and an entry is automatically generated in `booking_logs` detailing the creation event.
 
-#### 6.1 Entity Definitions
-- **`users`**: Contains `id`, `username`, `security_pin`, `role`, `company_id`, and `is_active`.
-- **`bookings`**: Stores `room_id`, `customer_id`, `project_id`, `booking_date`, `from_time`, `to_time`, and `status`.
-- **`chalans`**: Links to `customer_id`, `project_id`, and `booking_id`. Contains financial data and `is_cancelled` flags.
-- **`user_module_access`**: Bridges users to permissions. Stores booleans for View/Create/Edit/Delete across various system modules.
+#### 3.2 CHALAN (BILLING) GENERATION & MANAGEMENT
+PRISM transforms operational data into financial documents through the Chalan module.
 
-#### 6.2 Relational Integrity
-- **Cascading Deletes**: Controlled at the application level in `storage.ts` to prevent accidental loss of financial or audit data.
-- **Foreign Keys**: Enforced at the database level for all relationships (e.g., a project cannot exist without a valid customer).
+**The Chalan Lifecycle**:
+- **Drafting**: Users select one or more completed bookings to include in a Chalan. The system automatically calculates "Total Billable Hours" by subtracting "Break Hours" from the total session duration.
+- **Itemization**: Every Chalan can have multiple line items. The system pulls rates from a pre-configured Master list or allows manual entry for specialized services.
+- **Document Revisioning**:
+    Post-production chalans are frequently revised. PRISM handles this through a dedicated `chalan_revisions` table. When a chalan is edited:
+    1.  A snapshot of the current state is taken.
+    2.  The `is_revised` flag is set to true on the main record.
+    3.  A version-stamped entry is saved to the revision history.
+- **Cancellation Protocol**: Chalans cannot be "deleted" in the traditional sense once generated. They must be "Cancelled" with a mandatory reason. This ensures a complete audit trail for financial compliance.
+
+### 4. MASTERS MODULE: DATA MANAGEMENT & RELATIONSHIPS
+
+#### 4.1 CUSTOMER & CONTACT HIERARCHY
+The `customers` table is the root of the financial hierarchy.
+- **Multi-Contact Support**: Each customer can have an unlimited number of contacts (Producers, Accountants, etc.) stored in the `customer_contacts` table.
+- **Primary Contacts**: A specific contact can be designated as "Primary," ensuring they are the default recipient for chalans and booking notifications.
+
+#### 4.2 PROJECT TRACKING
+Projects are scoped per customer. 
+- **Type Specialization**: Projects are categorized as Movies, Serials, Web Series, etc., allowing for segmented reporting.
+- **Lifecycle Status**: Projects can be marked as "Inactive" once completed, hiding them from the active Booking dropdowns while preserving historical data.
+
+#### 4.3 RESOURCE MASTERS (ROOMS & EDITORS)
+- **Room Specifications**: Rooms are categorized by their technical capability (e.g., Mixing, DI, VFX). This categorization is used in the Reporting module to analyze which studio assets are most profitable.
+- **Editor Profiles**: Beyond basic contact info, the Editor Master tracks specializations. The system uses this data to suggest appropriate editors for specific room types during the booking process.
 
 ---
-
-### 7. Security Architecture
-- **Environment Isolation**: Secrets like `DATABASE_URL` and `SESSION_SECRET` are stored in environment variables.
-- **Data Sanitization**: Backend routes manually strip sensitive fields (like PINs) before sending JSON responses to the client.
-- **RBAC Enforcement**: A dual-layer permission check system:
-  1. **Frontend**: UI elements are hidden based on user role/permissions.
-  2. **Backend**: Middleware (`requirePermission`) validates every API request against the user's rights stored in the database.
-- **CSRF Protection**: Standard session-based security and CORS configuration.
-
----
-
-### 8. Frontend Design System
-PRISM uses a highly opinionated design system based on:
-- **Consistency**: 8px (0.5rem) grid system for spacing.
-- **Interactions**: Custom `hover-elevate` and `active-elevate-2` classes for tactile feedback.
-- **Typography**: Clear hierarchy using standard font sizes and secondary/tertiary colors for metadata.
-- **Forms**: Built using `react-hook-form` and `zodResolver` for instant user feedback and validation.
-
----
-
-### 9. Development Workflow
-- **Database Migrations**: `npm run db:push` to sync local schema changes with PostgreSQL.
-- **Vite Dev Server**: `npm run dev` for hot-module replacement and rapid frontend iteration.
-- **Production Readiness**: Always run `npm run build` before deployment to ensure all assets are minified and optimized.
+*(End of Section 4 - Sections 5-8 Continued in Next Part)*
