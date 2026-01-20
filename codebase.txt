@@ -1,25 +1,14 @@
 # Project Codebase Files
 
 ## Root Directory
-- Doc_01_Architecture.txt
-- Doc_02_Installation.txt
-- Doc_03_Operations.txt
-- Doc_04_Masters.txt
-- Doc_05_Security.txt
-- Doc_06_Reports.txt
-- Doc_07_Technical.txt
-- Documentation.txt
 - components.json
-- design_guidelines.md
 - drizzle.config.ts
 - package-lock.json
 - package.json
 - postcss.config.js
-- replit.md
 - tailwind.config.ts
 - tsconfig.json
 - vite.config.ts
-- codebase.txt
 
 ## client/
 - index.html
