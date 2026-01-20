@@ -1,43 +1,49 @@
-.
-├── client/                      :- Frontend application source code
-│   ├── public/                  :- Static assets served directly (favicon, etc.)
-│   ├── src/                     :- Main source code for the React frontend
-│   │   ├── components/          :- Reusable UI components
-│   │   │   ├── ui/              :- Base shadcn UI components (buttons, inputs, etc.)
-│   │   │   ├── app-sidebar.tsx  :- Main navigation sidebar component
-│   │   │   ├── booking-card.tsx :- Component for displaying individual bookings
-│   │   │   ├── header.tsx       :- Main application header
-│   │   │   └── ...              :- Other domain-specific UI components
-│   │   ├── hooks/               :- Custom React hooks (use-toast, use-mobile)
-│   │   ├── lib/                 :- Frontend utility libraries and providers
-│   │   │   ├── auth-context.tsx :- Authentication state management
-│   │   │   ├── queryClient.ts   :- TanStack Query configuration
-│   │   │   └── ...              :- Other utility functions
-│   │   ├── pages/               :- Individual page components (routes)
-│   │   │   ├── booking.tsx      :- Booking management page
-│   │   │   ├── history.tsx      :- Historical data view
-│   │   │   ├── masters/         :- Master data management pages
-│   │   │   └── ...              :- Other application pages
-│   │   ├── App.tsx              :- Root React component with routing
-│   │   ├── index.css            :- Global styles and Tailwind configuration
-│   │   └── main.tsx             :- Frontend entry point
-│   └── index.html               :- HTML entry point
-├── server/                      :- Backend application source code (Express)
-│   ├── db.ts                    :- Database connection and configuration
-│   ├── index.ts                 :- Backend entry point and server setup
-│   ├── routes.ts                :- API route definitions
-│   ├── storage.ts               :- Data storage abstraction layer (CRUD)
-│   └── vite.ts                  :- Vite integration for development
-├── shared/                      :- Code shared between frontend and backend
-│   └── schema.ts                :- Database schema and Zod validation types
-├── script/                      :- Build and utility scripts
-│   └── build.ts                 :- Production build script
-├── docs/                        :- Project documentation
-│   └── PROJECT_DOCUMENTATION.md :- Comprehensive project documentation
-├── attached_assets/             :- User-provided assets and images
-├── codebase.txt                 :- (This file) Project structure overview
-├── drizzle.config.ts            :- Drizzle ORM configuration
-├── package.json                 :- Project dependencies and scripts
-├── tailwind.config.ts           :- Tailwind CSS configuration
-├── tsconfig.json                :- TypeScript configuration
-└── vite.config.ts               :- Vite build configuration
+# Project Codebase Overview
+
+This document provides a detailed explanation of the PRISIMV9 project structure, organized by its core functional areas.
+
+## 1. Frontend Architecture (`/client`)
+The frontend is built using React with TypeScript, Vite as the build tool, and Tailwind CSS for styling. It follows a modular component-based architecture.
+
+### 1.1 Core Frontend Files
+- **`src/App.tsx`**: The main entry point for the React application. It defines the routing structure using `wouter`, wraps the app in necessary providers (QueryClient, Auth, Theme), and sets up the global layout including the sidebar.
+- **`src/main.tsx`**: Initializes the React application and mounts it to the DOM.
+- **`src/index.css`**: Contains global styles, Tailwind CSS imports, and custom variable definitions for the application's theme.
+
+### 1.2 Components (`src/components`)
+- **`ui/`**: Contains base reusable UI primitives built with Radix UI and Shadcn (Buttons, Inputs, Dialogs, etc.).
+- **`app-sidebar.tsx`**: Implements the primary navigation system, providing access to different modules of the application.
+- **`header.tsx`**: Manages the top navigation bar, including user profile access and theme toggling.
+- **Domain Components**: Files like `booking-card.tsx`, `booking-form.tsx`, and `chalan-invoice.tsx` handle specific business logic and data display for the logistics/booking domain.
+
+### 1.3 Logic and State (`src/lib` & `src/hooks`)
+- **`lib/auth-context.tsx`**: Manages user authentication state and provides login/logout functionality across the app.
+- **`lib/queryClient.ts`**: Configures TanStack Query for efficient data fetching, caching, and synchronization with the backend API.
+- **`hooks/use-toast.ts`**: Provides a standardized way to trigger UI notifications.
+
+### 1.4 Pages (`src/pages`)
+Contains the top-level view components for each route, such as `booking.tsx` for creating entries, `history.tsx` for viewing past records, and specialized sub-directories like `masters/` for administrative data management.
+
+---
+
+## 2. Backend Infrastructure (`/server`)
+The backend is a Node.js server using Express, designed for data persistence and API orchestration.
+
+- **`index.ts`**: Sets up the Express server, middleware (logging, session management), and integrates with Vite during development.
+- **`routes.ts`**: Defines the API endpoints that the frontend consumes. It acts as the controller layer, handling requests and calling the storage layer.
+- **`storage.ts`**: Implements the Data Access Object (DAO) pattern. It abstracts the database operations, allowing the rest of the app to interact with data without knowing the underlying implementation details.
+- **`db.ts`**: Configures the connection to the PostgreSQL database using Drizzle ORM.
+
+---
+
+## 3. Shared Resources (`/shared`)
+- **`schema.ts`**: The single source of truth for the data model. It defines the Drizzle database tables and generates Zod schemas for validation, ensuring type safety from the database to the frontend forms.
+
+---
+
+## 4. Configuration and Tooling
+- **`package.json`**: Manages project dependencies and defines scripts for development, building, and database management.
+- **`tailwind.config.ts`**: Customizes the Tailwind CSS framework, including theme colors and animations.
+- **`vite.config.ts`**: Configures the Vite build pipeline, including path aliases and plugins.
+- **`drizzle.config.ts`**: Configuration for Drizzle Kit, used for managing database schema migrations and pushes.
+- **`tsconfig.json`**: Defines TypeScript compiler options for the project.
